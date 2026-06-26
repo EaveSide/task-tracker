@@ -612,6 +612,16 @@ export default function Home() {
           >
             + New Task
           </button>
+          <button
+            onClick={async () => {
+              await fetch('/api/login', { method: 'DELETE' });
+              window.location.assign('/login');
+            }}
+            className="text-gray-400 hover:text-white px-3 py-1.5 rounded-lg text-sm transition-colors"
+            title="Log out"
+          >
+            Log out
+          </button>
         </div>
       </div>
 
