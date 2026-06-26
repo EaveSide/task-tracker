@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { DevTask, PROJECTS, AREAS, STATUSES, STATUS_LABELS } from '@/lib/types';
+import { DevTask, AREAS, STATUSES, STATUS_LABELS } from '@/lib/types';
+import { useSpaces } from '@/components/providers/SpacesProvider';
+import { useUsers } from '@/components/providers/UsersProvider';
 
 const TASK_TYPES = ['Enhancement', 'Bug Fix', 'Bug (Critical)', 'Feature Gap', 'Refactor', 'Documentation'];
 
@@ -32,6 +34,8 @@ export default function TaskModal({
   onUnarchive,
   archiving,
 }: TaskModalProps) {
+  const { spaces } = useSpaces();
+  const { users } = useUsers();
   const [addingSprint, setAddingSprint] = useState(false);
   const [newSprintNum, setNewSprintNum] = useState('');
   const [form, setForm] = useState<DevTask>(task);
@@ -97,11 +101,14 @@ export default function TaskModal({
                 onChange={(e) => set('project', e.target.value)}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
               >
-                {PROJECTS.map((p) => (
+                {spaces.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
                 ))}
+                {form.project && !spaces.some((p) => p.id === form.project) && (
+                  <option value={form.project}>{form.project}</option>
+                )}
               </select>
             </div>
             <div>
@@ -247,11 +254,21 @@ export default function TaskModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1">Assignee</label>
-              <input
+              <select
                 value={form.assignee}
                 onChange={(e) => set('assignee', e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="">Unassigned</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.name}>
+                    {u.name}
+                  </option>
+                ))}
+                {form.assignee && !users.some((u) => u.name === form.assignee) && (
+                  <option value={form.assignee}>{form.assignee}</option>
+                )}
+              </select>
             </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Blocked By</label>

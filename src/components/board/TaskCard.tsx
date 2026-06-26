@@ -2,6 +2,7 @@
 
 import type { DevTask } from '@/lib/types';
 import { getProjectById, getTypeClass } from '@/lib/task-format';
+import { useSpaces } from '@/components/providers/SpacesProvider';
 
 interface TaskCardProps {
   task: DevTask;
@@ -10,7 +11,8 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardProps) {
-  const proj = getProjectById(task.project);
+  const { getSpace } = useSpaces();
+  const proj = getSpace(task.project) ?? getProjectById(task.project);
   return (
     <div
       className={`bg-gray-900 border border-gray-800 rounded-lg p-3 transition-colors priority-${task.priority} ${

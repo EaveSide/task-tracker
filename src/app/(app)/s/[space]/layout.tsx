@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
-import { getSpace } from '@/lib/spaces';
+import { getSpaceServer } from '@/lib/spaces-server';
 import SpaceShell from '@/components/shell/SpaceShell';
 
 export default async function SpaceLayout({
@@ -11,6 +11,6 @@ export default async function SpaceLayout({
   params: Promise<{ space: string }>;
 }) {
   const { space } = await params;
-  if (!getSpace(space)) notFound();
+  if (!(await getSpaceServer(space))) notFound();
   return <SpaceShell spaceId={space}>{children}</SpaceShell>;
 }

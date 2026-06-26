@@ -52,6 +52,13 @@ export const AREAS = [
   'User Management',
 ] as const;
 
+// A member of the team roster (see supabase/spaces_and_users.sql).
+// Names populate the Assignee dropdown in the ticket creator.
+export interface AppUser {
+  id: string;
+  name: string;
+}
+
 export const STATUSES = ['todo', 'in-progress', 'review', 'blocked', 'done'] as const;
 
 export const STATUS_LABELS: Record<string, string> = {

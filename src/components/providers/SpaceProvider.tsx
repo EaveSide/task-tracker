@@ -9,8 +9,9 @@ import {
   type ReactNode,
 } from 'react';
 import type { DevTask } from '@/lib/types';
-import { getSpace, type Space } from '@/lib/spaces';
+import { FALLBACK_SPACE_COLOR, type Space } from '@/lib/spaces';
 import { useTasks } from './TasksProvider';
+import { useSpaces } from './SpacesProvider';
 
 interface SpaceFilters {
   sprint: string;
@@ -71,12 +72,13 @@ export function SpaceProvider({
   children: ReactNode;
 }) {
   const { tasks, sprints } = useTasks();
+  const { getSpace } = useSpaces();
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<SpaceFilters>(DEFAULT_FILTERS);
   const [sortField, setSortField] = useState('id');
   const [sortAsc, setSortAsc] = useState(true);
 
-  const space = getSpace(spaceId) ?? { id: spaceId, name: spaceId, color: '#64748b' };
+  const space: Space = getSpace(spaceId) ?? { id: spaceId, name: spaceId, color: FALLBACK_SPACE_COLOR };
 
   const setFilter = useCallback(
     (key: keyof SpaceFilters, value: string) =>

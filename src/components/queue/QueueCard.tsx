@@ -2,6 +2,7 @@
 
 import type { DevTask } from '@/lib/types';
 import { getProjectById, getTypeClass, STATUS_LABELS } from '@/lib/task-format';
+import { useSpaces } from '@/components/providers/SpacesProvider';
 
 export type QuickAction = 'start' | 'done' | 'block';
 
@@ -20,7 +21,8 @@ export default function QueueCard({
   dragHandleProps,
   isOverlay,
 }: QueueCardProps) {
-  const proj = getProjectById(task.project);
+  const { getSpace } = useSpaces();
+  const proj = getSpace(task.project) ?? getProjectById(task.project);
 
   return (
     <div
