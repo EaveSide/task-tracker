@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS spaces (
 -- Seed the existing four projects so nothing changes on first run.
 INSERT INTO spaces (id, name, color, sort_order) VALUES
   ('crm',       'Roof Estimate CRM',      '#3b82f6', 0),
-  ('app',       'RoofingLogic App',       '#10b981', 1),
-  ('marketing', 'RoofingLogic Marketing', '#f59e0b', 2),
-  ('xactimate', 'RoofingLogic Xactimate', '#8b5cf6', 3)
+  ('app',       'Eaveside App',       '#10b981', 1),
+  ('marketing', 'Eaveside Marketing', '#f59e0b', 2),
+  ('xactimate', 'Eaveside Xactimate', '#8b5cf6', 3)
 ON CONFLICT (id) DO NOTHING;
 
 -- Team roster. Names populate the "Assignee" dropdown in the ticket creator.

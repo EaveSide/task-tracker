@@ -1,8 +1,9 @@
 'use client';
 
 import { useTasks } from '@/components/providers/TasksProvider';
+import ThemeToggle from './ThemeToggle';
 
-export default function SidebarFooter() {
+export default function SidebarFooter({ collapsed }: { collapsed?: boolean }) {
   const { syncStatus } = useTasks();
 
   async function logout() {
@@ -11,8 +12,11 @@ export default function SidebarFooter() {
   }
 
   return (
-    <div className="mt-auto space-y-2 border-t border-gray-800 pt-3">
-      <div className="flex items-center gap-2 px-2.5">
+    <div className="mt-auto space-y-1 border-t border-gray-800 pt-3">
+      <div
+        className={`flex items-center gap-2 ${collapsed ? 'justify-center' : 'px-2.5'}`}
+        title={syncStatus}
+      >
         <span
           className={`h-2 w-2 rounded-full ${
             syncStatus === 'Connected'
@@ -22,13 +26,25 @@ export default function SidebarFooter() {
                 : 'bg-yellow-500'
           }`}
         />
-        <span className="text-xs text-gray-500">{syncStatus}</span>
+        {!collapsed && <span className="text-xs text-gray-500">{syncStatus}</span>}
       </div>
+
+      <ThemeToggle collapsed={collapsed} />
+
       <button
         onClick={logout}
-        className="w-full rounded-lg px-2.5 py-1.5 text-left text-sm text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white"
+        title="Log out"
+        className={`flex items-center rounded-lg py-1.5 text-sm text-gray-400 transition-colors hover:bg-gray-800/50 hover:text-white ${
+          collapsed ? 'w-full justify-center px-0' : 'w-full px-2.5 text-left'
+        }`}
       >
-        Log out
+        {collapsed ? (
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M10.5 11l3-3-3-3M13.5 8H6" />
+          </svg>
+        ) : (
+          'Log out'
+        )}
       </button>
     </div>
   );

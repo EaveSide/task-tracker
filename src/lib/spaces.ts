@@ -11,9 +11,9 @@ export interface Space {
 
 export const DEFAULT_SPACES: Space[] = [
   { id: 'crm', name: 'Roof Estimate CRM', color: '#3b82f6' },
-  { id: 'app', name: 'RoofingLogic App', color: '#10b981' },
-  { id: 'marketing', name: 'RoofingLogic Marketing', color: '#f59e0b' },
-  { id: 'xactimate', name: 'RoofingLogic Xactimate', color: '#8b5cf6' },
+  { id: 'app', name: 'Eaveside App', color: '#10b981' },
+  { id: 'marketing', name: 'Eaveside Marketing', color: '#f59e0b' },
+  { id: 'xactimate', name: 'Eaveside Xactimate', color: '#8b5cf6' },
 ];
 
 export const FALLBACK_SPACE_COLOR = '#64748b';

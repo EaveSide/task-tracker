@@ -17,6 +17,61 @@ body {
   color: var(--foreground);
 }
 
+/* ───────────────────────────────────────────────────────────
+   Light theme. The app is styled with literal dark gray
+   utilities, so the .light class (set on <html>) remaps that
+   small, fixed palette. `.light .x` outranks the base `.x`
+   utility, so no component markup needs to change.
+   ─────────────────────────────────────────────────────────── */
+.light {
+  --background: #f6f8fa;
+  --foreground: #0f172a;
+}
+
+/* Surfaces */
+.light .bg-gray-950 { background-color: #ffffff; }
+.light .bg-gray-900 { background-color: #ffffff; }
+.light .bg-gray-900\/50 { background-color: #f1f5f9; }
+.light .bg-gray-800 { background-color: #eef2f6; }
+.light .bg-gray-800\/60 { background-color: #f1f5f9; }
+.light .bg-gray-700 { background-color: #e2e8f0; }
+.light .bg-gray-600 { background-color: #cbd5e1; }
+.light .hover\:bg-gray-900:hover { background-color: #f1f5f9; }
+.light .hover\:bg-gray-800\/50:hover { background-color: #eef2f6; }
+.light .hover\:bg-gray-600:hover { background-color: #b8c2cf; }
+
+/* Borders */
+.light .border-gray-800 { border-color: #e2e8f0; }
+.light .border-gray-800\/50 { border-color: #eef2f6; }
+.light .border-gray-700 { border-color: #cbd5e1; }
+.light .hover\:border-gray-500:hover,
+.light .hover\:border-gray-600:hover,
+.light .hover\:border-gray-700:hover { border-color: #94a3b8; }
+
+/* Text */
+.light .text-white { color: #0f172a; }
+.light .text-gray-200 { color: #1e293b; }
+.light .text-gray-300 { color: #334155; }
+.light .text-gray-400 { color: #64748b; }
+.light .text-gray-500 { color: #64748b; }
+.light .text-gray-600 { color: #94a3b8; }
+.light .hover\:text-white:hover { color: #0f172a; }
+.light .hover\:text-gray-300:hover { color: #334155; }
+.light .hover\:text-gray-400:hover { color: #475569; }
+
+/* Keep white text on saturated (colored) buttons/badges */
+.light
+  :is(
+    .bg-blue-600, .bg-blue-700, .bg-green-600, .bg-green-700,
+    .bg-amber-600, .bg-amber-700, .bg-red-600, .bg-yellow-600,
+    .bg-zinc-600, .bg-zinc-700, .bg-blue-600\/80, .bg-green-600\/80,
+    .bg-red-600\/80
+  ).text-white {
+  color: #ffffff;
+}
+
+.light ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+
 /* Priority left-border colors */
 .priority-high { border-left: 3px solid #ef4444; }
 .priority-medium { border-left: 3px solid #f59e0b; }

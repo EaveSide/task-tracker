@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState, type FormEvent } from 'react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 function LoginForm() {
@@ -48,7 +49,10 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-lg">
-        <h1 className="text-lg font-bold mb-1">RoofingLogic Task Tracker</h1>
+        <div className="mb-4 flex items-center gap-2.5">
+          <Image src="/eaveside-logo.png" alt="Eaveside" width={32} height={32} className="rounded-lg" />
+          <h1 className="text-lg font-bold">Eaveside Task Tracker</h1>
+        </div>
         <p className="text-sm text-gray-400 mb-5">Enter the team password to continue.</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">

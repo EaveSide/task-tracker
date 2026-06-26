@@ -37,6 +37,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  // Run on everything except Next.js internals and static asset files.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.svg$).*)'],
+  // Run on everything except Next.js internals and static asset files
+  // (images/fonts/icons), so public assets like the logo stay reachable.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
 };

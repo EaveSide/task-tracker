@@ -186,7 +186,7 @@ export default function SubmitPage() {
               <path d="M8 1v6M5 4l3 3 3-3" />
               <rect x="2" y="9" width="12" height="5" rx="1" />
             </svg>
-            RoofingLogic Task Tracker
+            Eaveside Task Tracker
           </div>
           <h1 className="mb-2 text-2xl font-bold">Submit a Request</h1>
           <p className="text-sm text-gray-400">

@@ -7,28 +7,31 @@ interface SpaceNavItemProps {
   space: Space;
   count: number;
   active: boolean;
+  collapsed?: boolean;
   onDelete?: (space: Space) => void;
 }
 
-export default function SpaceNavItem({ space, count, active, onDelete }: SpaceNavItemProps) {
+export default function SpaceNavItem({ space, count, active, collapsed, onDelete }: SpaceNavItemProps) {
   return (
     <div className="group relative">
       <Link
         href={`/s/${space.id}/board`}
-        className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
+        title={collapsed ? space.name : undefined}
+        className={`flex items-center gap-2.5 rounded-lg py-1.5 text-sm transition-colors ${
+          collapsed ? 'justify-center px-0' : 'px-2.5'
+        } ${
           active ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
         }`}
       >
         <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: space.color }} />
-        <span className="min-w-0 flex-1 truncate">{space.name}</span>
-        {/* Count hides on hover to make room for the delete control. */}
-        {count > 0 && (
+        {!collapsed && <span className="min-w-0 flex-1 truncate">{space.name}</span>}
+        {!collapsed && count > 0 && (
           <span className={`shrink-0 text-xs text-gray-500 ${onDelete ? 'group-hover:hidden' : ''}`}>
             {count}
           </span>
         )}
       </Link>
-      {onDelete && (
+      {!collapsed && onDelete && (
         <button
           onClick={(e) => {
             e.preventDefault();

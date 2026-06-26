@@ -13,10 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RoofingLogic Task Tracker",
-  description: "Development task tracker for RoofingLogic projects",
-  icons: { icon: "/icon.svg" },
+  title: "Eaveside Task Tracker",
+  description: "Development task tracker for Eaveside projects",
 };
+
+// Applies the saved theme class to <html> before paint (no flash of wrong theme).
+// Stored in sessionStorage so it lasts the browser tab/session; defaults to dark.
+const themeScript = `try{var t=sessionStorage.getItem('theme')||'dark';document.documentElement.classList.add(t);}catch(e){document.documentElement.classList.add('dark');}`;
 
 export default function RootLayout({
   children,
@@ -24,7 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
