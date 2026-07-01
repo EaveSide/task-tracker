@@ -14,11 +14,12 @@ export default function SubmissionsView() {
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // "All" hides declined submissions — they're only shown via the Declined filter.
+  // "All" hides resolved submissions (accepted + declined) — those are only
+  // shown via their own filter chip.
   const filtered = useMemo(
     () =>
       filter === 'all'
-        ? submissions.filter((s) => s.status !== 'declined')
+        ? submissions.filter((s) => s.status !== 'declined' && s.status !== 'accepted')
         : submissions.filter((s) => s.status === filter),
     [submissions, filter]
   );
