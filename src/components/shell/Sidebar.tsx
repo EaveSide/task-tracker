@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import type { Space } from '@/lib/spaces';
+import { usePathname } from 'next/navigation';
 import { useTasks } from '@/components/providers/TasksProvider';
 import { useSubmissions } from '@/components/providers/SubmissionsProvider';
 import { useSpaces } from '@/components/providers/SpacesProvider';
@@ -49,10 +48,9 @@ function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { tasks } = useTasks();
   const { newSubmissionCount } = useSubmissions();
-  const { spaces, removeSpace } = useSpaces();
+  const { spaces } = useSpaces();
   const [addSpaceOpen, setAddSpaceOpen] = useState(false);
   const [manageUsersOpen, setManageUsersOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -89,20 +87,6 @@ export default function Sidebar() {
   }, [tasks]);
 
   const activeSpaceId = pathname.startsWith('/s/') ? pathname.split('/')[2] : null;
-
-  async function handleDeleteSpace(space: Space) {
-    if (
-      !confirm(
-        `Delete the "${space.name}" space? Its tasks are kept in the database but won't show in the sidebar.`
-      )
-    )
-      return;
-    const ok = await removeSpace(space.id);
-    if (ok && activeSpaceId === space.id) {
-      const next = spaces.find((s) => s.id !== space.id);
-      router.push(next ? `/s/${next.id}/board` : '/');
-    }
-  }
 
   return (
     <aside
@@ -164,7 +148,6 @@ export default function Sidebar() {
             count={counts[space.id] || 0}
             active={activeSpaceId === space.id}
             collapsed={collapsed}
-            onDelete={spaces.length > 1 ? handleDeleteSpace : undefined}
           />
         ))}
       </nav>

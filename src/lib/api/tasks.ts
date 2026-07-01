@@ -32,11 +32,6 @@ export async function saveTask(task: DevTask): Promise<DevTask> {
   return res.json();
 }
 
-export async function deleteTask(id: string): Promise<void> {
-  const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Delete failed');
-}
-
 export async function archiveTasks(ids: string[]): Promise<number> {
   const res = await fetch('/api/tasks/archive', {
     method: 'POST',

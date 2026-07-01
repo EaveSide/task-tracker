@@ -120,14 +120,6 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
     [tasksCtx, subsCtx, accepting, close]
   );
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      await tasksCtx.deleteTask(id);
-      close();
-    },
-    [tasksCtx, close]
-  );
-
   const handleArchive = useCallback(
     async (id: string) => {
       await tasksCtx.archiveTasks([id]);
@@ -170,7 +162,6 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
           saving={tasksCtx.saving}
           sprints={tasksCtx.sprints}
           onSave={handleSave}
-          onDelete={handleDelete}
           onClose={close}
           isAccepting={!!accepting}
           showArchived={tasksCtx.showArchived}

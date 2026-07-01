@@ -30,7 +30,6 @@ interface TasksContextValue {
   persistTask: (task: DevTask) => Promise<DevTask | null>;
   /** Like persistTask but toggles `saving` and alerts on failure (used by the modal). */
   saveTask: (task: DevTask) => Promise<DevTask | null>;
-  deleteTask: (id: string) => Promise<void>;
   archiveTasks: (ids: string[]) => Promise<void>;
   unarchiveTasks: (ids: string[]) => Promise<void>;
 }
@@ -140,20 +139,6 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     [mergeTask, flash]
   );
 
-  const deleteTask = useCallback(
-    async (id: string) => {
-      if (!confirm('Delete this task?')) return;
-      try {
-        await tasksApi.deleteTask(id);
-        setTasks((prev) => prev.filter((t) => t.id !== id));
-        flash('Deleted');
-      } catch {
-        alert('Delete failed');
-      }
-    },
-    [flash]
-  );
-
   const archiveTasks = useCallback(
     async (ids: string[]) => {
       if (ids.length === 0) return;
@@ -205,7 +190,6 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     archiving,
     persistTask,
     saveTask,
-    deleteTask,
     archiveTasks,
     unarchiveTasks,
   };

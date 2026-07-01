@@ -12,7 +12,6 @@ interface TaskModalProps {
   saving: boolean;
   sprints: string[];
   onSave: (task: DevTask) => void;
-  onDelete: (id: string) => void;
   onClose: () => void;
   isAccepting?: boolean;
   showArchived: 'active' | 'archived';
@@ -26,7 +25,6 @@ export default function TaskModal({
   saving,
   sprints,
   onSave,
-  onDelete,
   onClose,
   isAccepting,
   showArchived,
@@ -312,15 +310,6 @@ export default function TaskModal({
 
         <div className="flex items-center justify-between mt-6">
           <div className="flex items-center gap-3">
-            {isExisting && !isAccepting && (
-              <button
-                type="button"
-                onClick={() => onDelete(task.id)}
-                className="text-red-400 hover:text-red-300 text-sm"
-              >
-                Delete
-              </button>
-            )}
             {isExisting && !isAccepting && showArchived === 'active' && (
               <button
                 type="button"

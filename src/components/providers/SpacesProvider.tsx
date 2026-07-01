@@ -8,7 +8,6 @@ interface SpacesContextValue {
   spaces: Space[];
   getSpace: (id: string) => Space | undefined;
   addSpace: (name: string, color: string) => Promise<Space | null>;
-  removeSpace: (id: string) => Promise<boolean>;
 }
 
 const SpacesContext = createContext<SpacesContextValue | null>(null);
@@ -43,19 +42,8 @@ export function SpacesProvider({
     }
   }, []);
 
-  const removeSpace = useCallback(async (id: string): Promise<boolean> => {
-    try {
-      await spacesApi.deleteSpace(id);
-      setSpaces((prev) => prev.filter((s) => s.id !== id));
-      return true;
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete space');
-      return false;
-    }
-  }, []);
-
   return (
-    <SpacesContext.Provider value={{ spaces, getSpace, addSpace, removeSpace }}>
+    <SpacesContext.Provider value={{ spaces, getSpace, addSpace }}>
       {children}
     </SpacesContext.Provider>
   );

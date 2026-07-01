@@ -64,24 +64,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-// DELETE /api/spaces?id=xxx — remove a space (its tasks are left untouched)
-export async function DELETE(req: NextRequest) {
-  try {
-    const id = req.nextUrl.searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'id is required' }, { status: 400 });
-    }
-    const sb = getSupabaseAdmin();
-    const { error } = await sb.from('spaces').delete().eq('id', id);
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Internal error' },
-      { status: 500 }
-    );
-  }
-}
