@@ -4,16 +4,22 @@ import { useMemo, useState } from 'react';
 import { SUBMISSION_STATUSES, SUBMISSION_STATUS_LABELS } from '@/lib/types';
 import { useSubmissions } from '@/components/providers/SubmissionsProvider';
 import { useTaskModal } from '@/components/providers/TaskModalProvider';
+import { useUsers } from '@/components/providers/UsersProvider';
 import SubmissionCard from './SubmissionCard';
 
 export default function SubmissionsView() {
   const { submissions, newSubmissionCount, actioningId, updateSubmission } = useSubmissions();
-  const { acceptSubmission } = useTaskModal();
+  const { acceptSubmission, quickApprove } = useTaskModal();
+  const { users } = useUsers();
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // "All" hides declined submissions — they're only shown via the Declined filter.
   const filtered = useMemo(
-    () => (filter === 'all' ? submissions : submissions.filter((s) => s.status === filter)),
+    () =>
+      filter === 'all'
+        ? submissions.filter((s) => s.status !== 'declined')
+        : submissions.filter((s) => s.status === filter),
     [submissions, filter]
   );
 
@@ -50,10 +56,12 @@ export default function SubmissionsView() {
             <SubmissionCard
               key={sub.id}
               sub={sub}
+              users={users}
               expanded={expandedId === sub.id}
               actioning={actioningId === sub.id}
               onToggle={() => setExpandedId(expandedId === sub.id ? null : sub.id)}
               onAccept={acceptSubmission}
+              onQuickApprove={quickApprove}
               onUpdate={updateSubmission}
             />
           ))}

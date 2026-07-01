@@ -18,6 +18,8 @@ interface TaskModalContextValue {
   openNew: (defaults?: Partial<DevTask>) => void;
   openEdit: (task: DevTask) => void;
   acceptSubmission: (sub: FeatureSubmission) => void;
+  /** One-click approve: create a task from the submission and move it to the board. */
+  quickApprove: (sub: FeatureSubmission, assignee: string) => Promise<void>;
 }
 
 const TaskModalContext = createContext<TaskModalContextValue | null>(null);
@@ -68,6 +70,32 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
     );
     setOpen(true);
   }, []);
+
+  const quickApprove = useCallback(
+    async (sub: FeatureSubmission, assignee: string) => {
+      const saved = await tasksCtx.persistTask(
+        makeEmptyTask({
+          title: sub.title,
+          description:
+            sub.description +
+            (sub.submitted_by_name ? `\n\nSubmitted by: ${sub.submitted_by_name}` : '') +
+            (sub.submitted_by_email ? ` (${sub.submitted_by_email})` : ''),
+          type: SUBMISSION_TYPE_TO_TASK_TYPE[sub.type] || 'Enhancement',
+          assignee,
+          status: 'todo',
+        })
+      );
+      if (!saved) {
+        alert('Could not create the task. Please try again.');
+        return;
+      }
+      await subsCtx.updateSubmission(sub.id, {
+        status: 'accepted',
+        linked_task_id: saved.id,
+      });
+    },
+    [tasksCtx, subsCtx]
+  );
 
   const close = useCallback(() => {
     setOpen(false);
@@ -132,7 +160,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
   }, [open, close, openNew]);
 
   return (
-    <TaskModalContext.Provider value={{ openNew, openEdit, acceptSubmission }}>
+    <TaskModalContext.Provider value={{ openNew, openEdit, acceptSubmission, quickApprove }}>
       {children}
       {open && task && (
         <TaskModal
