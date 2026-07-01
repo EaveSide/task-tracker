@@ -16,6 +16,7 @@ export interface DevTask {
   notes: string;
   updated_at: string;
   archived: boolean;
+  image_urls: string[] | null; // Screenshots carried over from a feature submission
 }
 
 export const PROJECTS = [

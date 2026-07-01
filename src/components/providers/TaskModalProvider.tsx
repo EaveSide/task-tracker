@@ -66,6 +66,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
           (sub.submitted_by_email ? ` (${sub.submitted_by_email})` : ''),
         type: SUBMISSION_TYPE_TO_TASK_TYPE[sub.type] || 'Enhancement',
         area: '',
+        image_urls: sub.image_urls,
       })
     );
     setOpen(true);
@@ -83,6 +84,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
           type: SUBMISSION_TYPE_TO_TASK_TYPE[sub.type] || 'Enhancement',
           assignee,
           status: 'todo',
+          image_urls: sub.image_urls,
         })
       );
       if (!saved) {

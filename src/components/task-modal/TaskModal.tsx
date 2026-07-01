@@ -93,6 +93,24 @@ export default function TaskModal({
             />
           </div>
 
+          {form.image_urls && form.image_urls.length > 0 && (
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Screenshots</label>
+              <div className="flex flex-wrap gap-2">
+                {form.image_urls.map((url, i) => (
+                  <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`Attachment ${i + 1}`}
+                      className="h-20 w-20 rounded-lg border border-gray-700 object-cover transition-colors hover:border-blue-500"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1">Project</label>

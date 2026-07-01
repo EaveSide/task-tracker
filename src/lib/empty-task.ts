@@ -22,6 +22,7 @@ export function makeEmptyTask(overrides: Partial<DevTask> = {}): DevTask {
     notes: '',
     updated_at: '',
     archived: false,
+    image_urls: null,
     ...overrides,
   };
 }

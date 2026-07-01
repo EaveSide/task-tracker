@@ -45,6 +45,16 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
           </div>
           {task.area && <div className="text-xs text-gray-500 mb-1">{task.area}</div>}
           <div className="text-sm font-medium mb-2">{task.title}</div>
+          {task.image_urls && task.image_urls.length > 0 && (
+            <div className="mb-2 flex items-center gap-1 text-xs text-gray-500">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="2" y="2" width="12" height="12" rx="2" />
+                <circle cx="6" cy="6" r="1.2" />
+                <path d="M14 10l-3-3-5 5" />
+              </svg>
+              <span>{task.image_urls.length}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between text-xs text-gray-500">
             <span>#{task.id}</span>
             <div className="flex items-center gap-2">
