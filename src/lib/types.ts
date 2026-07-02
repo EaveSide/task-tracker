@@ -17,6 +17,8 @@ export interface DevTask {
   updated_at: string;
   archived: boolean;
   image_urls: string[] | null; // Screenshots carried over from a feature submission
+  notify_email: string | null; // If set, email this address when the task is set to Done
+  notified_at: string | null; // Server-managed: when the completion email was sent
 }
 
 export const PROJECTS = [

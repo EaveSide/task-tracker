@@ -45,14 +45,29 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
           </div>
           {task.area && <div className="text-xs text-gray-500 mb-1">{task.area}</div>}
           <div className="text-sm font-medium mb-2">{task.title}</div>
-          {task.image_urls && task.image_urls.length > 0 && (
-            <div className="mb-2 flex items-center gap-1 text-xs text-gray-500">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="2" y="2" width="12" height="12" rx="2" />
-                <circle cx="6" cy="6" r="1.2" />
-                <path d="M14 10l-3-3-5 5" />
-              </svg>
-              <span>{task.image_urls.length}</span>
+          {((task.image_urls && task.image_urls.length > 0) || task.notify_email) && (
+            <div className="mb-2 flex items-center gap-2.5 text-xs text-gray-500">
+              {task.image_urls && task.image_urls.length > 0 && (
+                <span className="flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="2" y="2" width="12" height="12" rx="2" />
+                    <circle cx="6" cy="6" r="1.2" />
+                    <path d="M14 10l-3-3-5 5" />
+                  </svg>
+                  {task.image_urls.length}
+                </span>
+              )}
+              {task.notify_email && (
+                <span
+                  className="flex items-center gap-1"
+                  title={`Emails ${task.notify_email} when Done`}
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 2a3 3 0 0 0-3 3c0 3-1.5 4-1.5 4h9S11 8 11 5a3 3 0 0 0-3-3Z" />
+                    <path d="M7 13a1.5 1.5 0 0 0 2 0" />
+                  </svg>
+                </span>
+              )}
             </div>
           )}
           <div className="flex items-center justify-between text-xs text-gray-500">

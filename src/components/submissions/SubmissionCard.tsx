@@ -11,7 +11,7 @@ interface SubmissionCardProps {
   actioning: boolean;
   onToggle: () => void;
   onAccept: (sub: FeatureSubmission) => void;
-  onQuickApprove: (sub: FeatureSubmission, assignee: string) => Promise<void>;
+  onQuickApprove: (sub: FeatureSubmission, assignee: string, notify: boolean) => Promise<void>;
   onUpdate: (id: string, updates: Record<string, unknown>) => void;
 }
 
@@ -26,6 +26,8 @@ export default function SubmissionCard({
   onUpdate,
 }: SubmissionCardProps) {
   const [assignee, setAssignee] = useState('');
+  const [notify, setNotify] = useState(false);
+  const canNotify = Boolean(sub.submitted_by_email);
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900 transition-colors hover:border-gray-700">
       <button
@@ -147,12 +149,31 @@ export default function SubmissionCard({
                 ))}
               </select>
               <button
-                onClick={() => onQuickApprove(sub, assignee)}
+                onClick={() => onQuickApprove(sub, assignee, notify && canNotify)}
                 disabled={actioning}
                 className="rounded-lg bg-green-600 hover:bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors disabled:opacity-50"
               >
                 {actioning ? 'Approving...' : 'Approve → Board'}
               </button>
+              <label
+                className={`flex items-center gap-1.5 text-xs ${
+                  canNotify ? 'text-gray-300' : 'text-gray-600'
+                }`}
+                title={
+                  canNotify
+                    ? `Email ${sub.submitted_by_email} when this is marked Done`
+                    : 'No submitter email on file'
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={notify && canNotify}
+                  disabled={!canNotify || actioning}
+                  onChange={(e) => setNotify(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-gray-600 bg-gray-700 accent-blue-600 disabled:opacity-50"
+                />
+                Notify on complete
+              </label>
               <button
                 onClick={() => onUpdate(sub.id, { status: 'declined' })}
                 disabled={actioning}
