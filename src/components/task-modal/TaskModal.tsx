@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { DevTask, AREAS, STATUSES, STATUS_LABELS } from '@/lib/types';
+import { makeTaskId } from '@/lib/task-id';
 import { useSpaces } from '@/components/providers/SpacesProvider';
 import { useUsers } from '@/components/providers/UsersProvider';
 
@@ -46,8 +47,7 @@ export default function TaskModal({
     e.preventDefault();
     const data = { ...form };
     if (!data.id) {
-      data.id =
-        'S' + (data.sprint || '').replace('Sprint ', '') + '-' + String(Date.now()).slice(-3);
+      data.id = makeTaskId(data.sprint);
     }
     onSave(data);
   }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-server';
+import { makeTaskId } from '@/lib/task-id';
 
 // GET /api/tasks — list tasks (default: active only)
 // ?include_archived=true — return all tasks
@@ -39,6 +40,13 @@ export async function POST(req: NextRequest) {
 
     if (!task.title?.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+
+    // Guard against upserting with an empty/missing primary key: an empty id
+    // collides with every other id-less row and silently overwrites it. Assign
+    // a fresh id for any new task that arrives without one.
+    if (!task.id || !String(task.id).trim()) {
+      task.id = makeTaskId(task.sprint);
     }
 
     task.updated_at = new Date().toISOString();
