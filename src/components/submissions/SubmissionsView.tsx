@@ -6,13 +6,15 @@ import { useSubmissions } from '@/components/providers/SubmissionsProvider';
 import { useTaskModal } from '@/components/providers/TaskModalProvider';
 import { useUsers } from '@/components/providers/UsersProvider';
 import SubmissionCard from './SubmissionCard';
+import AddSubmissionModal from './AddSubmissionModal';
 
 export default function SubmissionsView() {
-  const { submissions, newSubmissionCount, actioningId, updateSubmission } = useSubmissions();
+  const { submissions, newSubmissionCount, actioningId, updateSubmission, reload } = useSubmissions();
   const { acceptSubmission, quickApprove } = useTaskModal();
   const { users } = useUsers();
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   // "All" hides resolved submissions (accepted + declined) — those are only
   // shown via their own filter chip.
@@ -26,7 +28,18 @@ export default function SubmissionsView() {
 
   return (
     <div className="p-4 md:p-6">
-      <h1 className="mb-5 text-xl font-bold">Submissions</h1>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h1 className="text-xl font-bold">Submissions</h1>
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M8 3v10M3 8h10" />
+          </svg>
+          New Submission
+        </button>
+      </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {['all', ...SUBMISSION_STATUSES].map((s) => (
@@ -67,6 +80,10 @@ export default function SubmissionsView() {
             />
           ))}
         </div>
+      )}
+
+      {addOpen && (
+        <AddSubmissionModal onClose={() => setAddOpen(false)} onSuccess={reload} />
       )}
     </div>
   );
