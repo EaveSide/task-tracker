@@ -17,8 +17,6 @@ interface TaskModalProps {
   onSave: (task: DevTask) => void;
   onClose: () => void;
   isAccepting?: boolean;
-  /** Prefills the notify email input when the toggle is enabled (e.g. a submitter's email). */
-  suggestedNotifyEmail?: string;
   showArchived: 'active' | 'archived';
   onArchive: (id: string) => void;
   onUnarchive: (id: string) => void;
@@ -32,7 +30,6 @@ export default function TaskModal({
   onSave,
   onClose,
   isAccepting,
-  suggestedNotifyEmail,
   showArchived,
   onArchive,
   onUnarchive,
@@ -43,8 +40,6 @@ export default function TaskModal({
   const [addingSprint, setAddingSprint] = useState(false);
   const [newSprintNum, setNewSprintNum] = useState('');
   const [form, setForm] = useState<DevTask>(task);
-  const [notifyOn, setNotifyOn] = useState<boolean>(Boolean(task.notify_email));
-  const [notifyEmail, setNotifyEmail] = useState<string>(task.notify_email || suggestedNotifyEmail || '');
 
   function set(field: keyof DevTask, value: string | number) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -70,7 +65,6 @@ export default function TaskModal({
     if (!data.id) {
       data.id = makeTaskId(data.sprint);
     }
-    data.notify_email = notifyOn && notifyEmail.trim() ? notifyEmail.trim() : null;
     data.pr_url = form.pr_url?.trim() ? form.pr_url.trim() : null;
     onSave(data);
   }
@@ -333,29 +327,12 @@ export default function TaskModal({
             />
           </div>
 
-          <div className="rounded-lg border border-gray-800 bg-gray-800/40 px-3 py-2.5">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={notifyOn}
-                onChange={(e) => setNotifyOn(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-600 bg-gray-700 accent-blue-600"
-              />
-              <span className="font-medium">Email when marked Done</span>
-            </label>
-            {notifyOn && (
-              <input
-                type="email"
-                value={notifyEmail}
-                onChange={(e) => setNotifyEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="mt-2 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
-            )}
-            <p className="mt-1.5 text-xs text-gray-500">
-              We&apos;ll send a one-time email to this address when the task moves to Done.
-            </p>
-          </div>
+          {form.notify_email && (
+            <div className="rounded-lg border border-gray-800 bg-gray-800/40 px-3 py-2.5 text-xs text-gray-400">
+              Will email <span className="text-gray-200">{form.notify_email}</span> when this task
+              is marked Done (set by the submitter).
+            </div>
+          )}
 
           {isExisting && !isAccepting && <StatusHistory taskId={task.id} />}
         </div>

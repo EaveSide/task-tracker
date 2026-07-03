@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     const submitted_by_name = formData.get('submitted_by_name') as string;
     const submitted_by_email = formData.get('submitted_by_email') as string;
     const submitted_by_phone = formData.get('submitted_by_phone') as string;
+    const notify_on_complete = formData.get('notify_on_complete') === 'true';
     const honeypot = formData.get('honeypot') as string;
 
     // Validate required fields
@@ -56,6 +57,15 @@ export async function POST(req: NextRequest) {
     }
     if (!description?.trim() || description.trim().length < 20) {
       return NextResponse.json({ error: 'Description must be at least 20 characters' }, { status: 400 });
+    }
+    if (!submitted_by_name?.trim()) {
+      return NextResponse.json({ error: 'Your name is required' }, { status: 400 });
+    }
+    if (notify_on_complete && !submitted_by_email?.trim()) {
+      return NextResponse.json(
+        { error: 'Email is required to notify you on completion' },
+        { status: 400 }
+      );
     }
 
     // Honeypot check
@@ -125,6 +135,7 @@ export async function POST(req: NextRequest) {
         submitted_by_name: submitted_by_name?.trim() || null,
         submitted_by_email: submitted_by_email?.trim() || null,
         submitted_by_phone: submitted_by_phone?.trim() || null,
+        notify_on_complete,
         image_urls: imageUrls.length > 0 ? imageUrls : null,
         status: 'new',
         created_at: new Date().toISOString(),

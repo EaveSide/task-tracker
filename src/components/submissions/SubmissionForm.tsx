@@ -27,6 +27,7 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
     submitted_by_phone: '',
     honeypot: '',
   });
+  const [notifyOnComplete, setNotifyOnComplete] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,8 +45,14 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
       if (!value.trim()) return 'Description is required.';
       if (value.trim().length < 20) return 'Please provide more detail (at least 20 characters).';
     }
-    if (field === 'submitted_by_email' && value.trim()) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return 'Please enter a valid email.';
+    if (field === 'submitted_by_name' && !value.trim()) {
+      return 'Your name is required.';
+    }
+    if (field === 'submitted_by_email') {
+      if (notifyOnComplete && !value.trim()) return 'Email is required to notify you on completion.';
+      if (value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+        return 'Please enter a valid email.';
+      }
     }
     return undefined;
   }
@@ -98,6 +105,7 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
       submitted_by_phone: '',
       honeypot: '',
     });
+    setNotifyOnComplete(false);
     setFiles([]);
     previews.forEach((url) => URL.revokeObjectURL(url));
     setPreviews([]);
@@ -112,15 +120,17 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
 
     const titleErr = validate('title', form.title);
     const descErr = validate('description', form.description);
+    const nameErr = validate('submitted_by_name', form.submitted_by_name);
     const emailErr = validate('submitted_by_email', form.submitted_by_email);
 
-    if (titleErr || descErr || emailErr) {
+    if (titleErr || descErr || nameErr || emailErr) {
       setFieldErrors({
         title: titleErr || '',
         description: descErr || '',
+        submitted_by_name: nameErr || '',
         submitted_by_email: emailErr || '',
       });
-      setTouched({ title: true, description: true, submitted_by_email: true });
+      setTouched({ title: true, description: true, submitted_by_name: true, submitted_by_email: true });
       setStatus('idle');
       return;
     }
@@ -133,6 +143,7 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
       fd.append('submitted_by_name', form.submitted_by_name);
       fd.append('submitted_by_email', form.submitted_by_email);
       fd.append('submitted_by_phone', form.submitted_by_phone);
+      fd.append('notify_on_complete', String(notifyOnComplete));
       fd.append('honeypot', form.honeypot);
       files.forEach((f) => fd.append('images', f));
 
@@ -326,25 +337,37 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
         )}
       </div>
 
-      {/* Contact info */}
+      {/* Submitted by */}
       <div>
         <p className="mb-3 text-sm font-medium">
-          Contact Info <span className="text-xs text-gray-500">(optional, for follow-up)</span>
+          Submitted By <span className="text-red-400">*</span>
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="fr-name" className="mb-1 block text-xs text-gray-500">Name</label>
+            <label htmlFor="fr-name" className="mb-1 block text-xs text-gray-500">
+              Name <span className="text-red-400">*</span>
+            </label>
             <input
               id="fr-name"
               type="text"
+              required
               value={form.submitted_by_name}
-              onChange={(e) => setForm((f) => ({ ...f, submitted_by_name: e.target.value }))}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, submitted_by_name: e.target.value }));
+                if (touched.submitted_by_name) setFieldErrors((p) => ({ ...p, submitted_by_name: validate('submitted_by_name', e.target.value) || '' }));
+              }}
+              onBlur={() => handleBlur('submitted_by_name')}
               placeholder="Your name"
               className={inputCls('submitted_by_name')}
             />
+            {touched.submitted_by_name && fieldErrors.submitted_by_name && (
+              <p className="mt-1 text-sm text-red-400">{fieldErrors.submitted_by_name}</p>
+            )}
           </div>
           <div>
-            <label htmlFor="fr-email" className="mb-1 block text-xs text-gray-500">Email</label>
+            <label htmlFor="fr-email" className="mb-1 block text-xs text-gray-500">
+              Email {notifyOnComplete && <span className="text-red-400">*</span>}
+            </label>
             <input
               id="fr-email"
               type="email"
@@ -373,6 +396,29 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
             className={inputCls('submitted_by_phone')}
           />
         </div>
+        <label className="mt-3 flex items-center gap-2 text-sm text-gray-300">
+          <input
+            type="checkbox"
+            checked={notifyOnComplete}
+            onChange={(e) => {
+              setNotifyOnComplete(e.target.checked);
+              if (touched.submitted_by_email) {
+                const email = form.submitted_by_email.trim();
+                setFieldErrors((p) => ({
+                  ...p,
+                  submitted_by_email:
+                    e.target.checked && !email
+                      ? 'Email is required to notify you on completion.'
+                      : email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                        ? 'Please enter a valid email.'
+                        : '',
+                }));
+              }
+            }}
+            className="h-4 w-4 rounded border-gray-600 bg-gray-700 accent-blue-600"
+          />
+          Email me when this is completed
+        </label>
       </div>
 
       {/* Error banner */}

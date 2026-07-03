@@ -19,7 +19,7 @@ interface TaskModalContextValue {
   openEdit: (task: DevTask) => void;
   acceptSubmission: (sub: FeatureSubmission) => void;
   /** One-click approve: create a task from the submission and move it to the board. */
-  quickApprove: (sub: FeatureSubmission, assignee: string, notify: boolean) => Promise<void>;
+  quickApprove: (sub: FeatureSubmission, assignee: string) => Promise<void>;
 }
 
 const TaskModalContext = createContext<TaskModalContextValue | null>(null);
@@ -67,13 +67,14 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
         type: SUBMISSION_TYPE_TO_TASK_TYPE[sub.type] || 'Enhancement',
         area: '',
         image_urls: sub.image_urls,
+        notify_email: sub.notify_on_complete ? sub.submitted_by_email : null,
       })
     );
     setOpen(true);
   }, []);
 
   const quickApprove = useCallback(
-    async (sub: FeatureSubmission, assignee: string, notify: boolean) => {
+    async (sub: FeatureSubmission, assignee: string) => {
       const saved = await tasksCtx.persistTask(
         makeEmptyTask({
           title: sub.title,
@@ -85,7 +86,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
           assignee,
           status: 'todo',
           image_urls: sub.image_urls,
-          notify_email: notify ? sub.submitted_by_email : null,
+          notify_email: sub.notify_on_complete ? sub.submitted_by_email : null,
         })
       );
       if (!saved) {
@@ -165,7 +166,6 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
           onSave={handleSave}
           onClose={close}
           isAccepting={!!accepting}
-          suggestedNotifyEmail={accepting?.submitted_by_email ?? undefined}
           showArchived={tasksCtx.showArchived}
           onArchive={handleArchive}
           onUnarchive={handleUnarchive}

@@ -93,6 +93,7 @@ export interface FeatureSubmission {
   submitted_by_name: string | null;
   submitted_by_email: string | null;
   submitted_by_phone: string | null;
+  notify_on_complete: boolean; // Submitter opted in to an email when the task is Done
   status: 'new' | 'reviewed' | 'accepted' | 'declined';
   image_urls: string[] | null;
   linked_task_id: string | null; // ID of sprint_tasks entry if converted
