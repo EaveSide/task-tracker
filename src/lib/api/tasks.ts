@@ -1,4 +1,4 @@
-import type { DevTask } from '../types';
+import type { DevTask, TaskStatusEvent } from '../types';
 
 // Thin wrappers over the existing /api/tasks endpoints. Centralizes every
 // task fetch that used to be inline in page.tsx.
@@ -29,6 +29,12 @@ export async function saveTask(task: DevTask): Promise<DevTask> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Save failed');
   }
+  return res.json();
+}
+
+export async function fetchTaskHistory(taskId: string): Promise<TaskStatusEvent[]> {
+  const res = await fetch(`/api/tasks/history?task_id=${encodeURIComponent(taskId)}`);
+  if (!res.ok) throw new Error('Failed to load status history');
   return res.json();
 }
 

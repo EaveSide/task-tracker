@@ -77,6 +77,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Append to the status log: a creation event (from_status null) for new
+    // tasks, or a transition event when the status actually changed. A logging
+    // failure must not fail the save itself, so it's reported but not thrown.
+    if (!previous || previous.status !== data.status) {
+      const { error: logError } = await sb.from('task_status_events').insert({
+        task_id: data.id,
+        from_status: previous?.status ?? null,
+        to_status: data.status,
+      });
+      if (logError) {
+        console.error(`Failed to log status event for task ${data.id}:`, logError.message);
+      }
+    }
+
     // Fire a completion email when a task first becomes Done and opted in.
     const movedToDone =
       data.status === DONE_STATUS && (!previous || previous.status !== DONE_STATUS);

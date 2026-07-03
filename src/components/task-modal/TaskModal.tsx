@@ -5,6 +5,7 @@ import { DevTask, AREAS, STATUSES, STATUS_LABELS } from '@/lib/types';
 import { makeTaskId } from '@/lib/task-id';
 import { useSpaces } from '@/components/providers/SpacesProvider';
 import { useUsers } from '@/components/providers/UsersProvider';
+import StatusHistory from './StatusHistory';
 
 const TASK_TYPES = ['Enhancement', 'Bug Fix', 'Bug (Critical)', 'Feature Gap', 'Refactor', 'Documentation'];
 
@@ -336,6 +337,8 @@ export default function TaskModal({
               We&apos;ll send a one-time email to this address when the task moves to Done.
             </p>
           </div>
+
+          {isExisting && !isAccepting && <StatusHistory taskId={task.id} />}
         </div>
 
         <div className="flex items-center justify-between mt-6">

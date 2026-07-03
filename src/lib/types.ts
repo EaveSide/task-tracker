@@ -72,6 +72,16 @@ export const STATUS_LABELS: Record<string, string> = {
   done: 'Done',
 };
 
+// A single status transition on a task (see supabase/task_status_events.sql).
+// from_status is null for the creation event.
+export interface TaskStatusEvent {
+  id: string;
+  task_id: string;
+  from_status: string | null;
+  to_status: string;
+  changed_at: string;
+}
+
 // ── Feature Submissions (client-facing) ──
 
 export interface FeatureSubmission {
