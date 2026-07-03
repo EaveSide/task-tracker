@@ -32,6 +32,20 @@ export async function saveTask(task: DevTask): Promise<DevTask> {
   return res.json();
 }
 
+export async function uploadTaskImages(files: File[], taskId?: string): Promise<string[]> {
+  const fd = new FormData();
+  files.forEach((f) => fd.append('images', f));
+  if (taskId) fd.append('task_id', taskId);
+
+  const res = await fetch('/api/tasks/images', { method: 'POST', body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Image upload failed');
+  }
+  const result = await res.json();
+  return result.image_urls ?? [];
+}
+
 export async function fetchTaskHistory(taskId: string): Promise<TaskStatusEvent[]> {
   const res = await fetch(`/api/tasks/history?task_id=${encodeURIComponent(taskId)}`);
   if (!res.ok) throw new Error('Failed to load status history');

@@ -6,6 +6,7 @@ import { makeTaskId } from '@/lib/task-id';
 import { useSpaces } from '@/components/providers/SpacesProvider';
 import { useUsers } from '@/components/providers/UsersProvider';
 import StatusHistory from './StatusHistory';
+import TaskImagesField from './TaskImagesField';
 
 const TASK_TYPES = ['Enhancement', 'Bug Fix', 'Bug (Critical)', 'Feature Gap', 'Refactor', 'Documentation'];
 
@@ -56,6 +57,7 @@ export default function TaskModal({
       data.id = makeTaskId(data.sprint);
     }
     data.notify_email = notifyOn && notifyEmail.trim() ? notifyEmail.trim() : null;
+    data.pr_url = form.pr_url?.trim() ? form.pr_url.trim() : null;
     onSave(data);
   }
 
@@ -98,23 +100,11 @@ export default function TaskModal({
             />
           </div>
 
-          {form.image_urls && form.image_urls.length > 0 && (
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Screenshots</label>
-              <div className="flex flex-wrap gap-2">
-                {form.image_urls.map((url, i) => (
-                  <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={url}
-                      alt={`Attachment ${i + 1}`}
-                      className="h-20 w-20 rounded-lg border border-gray-700 object-cover transition-colors hover:border-blue-500"
-                    />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+          <TaskImagesField
+            value={form.image_urls}
+            taskId={form.id}
+            onChange={(urls) => setForm((f) => ({ ...f, image_urls: urls }))}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -302,6 +292,17 @@ export default function TaskModal({
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">PR Link</label>
+            <input
+              type="url"
+              value={form.pr_url || ''}
+              onChange={(e) => set('pr_url', e.target.value)}
+              placeholder="https://github.com/org/repo/pull/123"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+            />
           </div>
 
           <div>

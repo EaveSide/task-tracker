@@ -16,9 +16,10 @@ export interface DevTask {
   notes: string;
   updated_at: string;
   archived: boolean;
-  image_urls: string[] | null; // Screenshots carried over from a feature submission
+  image_urls: string[] | null; // Photos: uploaded on the task or carried over from a submission
   notify_email: string | null; // If set, email this address when the task is set to Done
   notified_at: string | null; // Server-managed: when the completion email was sent
+  pr_url: string | null; // Link to the pull request implementing this task
 }
 
 export const PROJECTS = [

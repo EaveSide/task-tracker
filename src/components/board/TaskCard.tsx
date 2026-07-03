@@ -45,7 +45,7 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
           </div>
           {task.area && <div className="text-xs text-gray-500 mb-1">{task.area}</div>}
           <div className="text-sm font-medium mb-2">{task.title}</div>
-          {((task.image_urls && task.image_urls.length > 0) || task.notify_email) && (
+          {((task.image_urls && task.image_urls.length > 0) || task.notify_email || task.pr_url) && (
             <div className="mb-2 flex items-center gap-2.5 text-xs text-gray-500">
               {task.image_urls && task.image_urls.length > 0 && (
                 <span className="flex items-center gap-1">
@@ -56,6 +56,26 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
                   </svg>
                   {task.image_urls.length}
                 </span>
+              )}
+              {task.pr_url && (
+                <a
+                  href={task.pr_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1 hover:text-blue-400 transition-colors"
+                  title="Open pull request"
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="4" cy="3.5" r="1.75" />
+                    <circle cx="4" cy="12.5" r="1.75" />
+                    <circle cx="12" cy="12.5" r="1.75" />
+                    <path d="M4 5.25v5.5" />
+                    <path d="M8.5 3.5H10a2 2 0 0 1 2 2v5.25" />
+                    <path d="M10 1.5l-1.5 2L10 5.5" />
+                  </svg>
+                  PR
+                </a>
               )}
               {task.notify_email && (
                 <span
