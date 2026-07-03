@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DevTask, AREAS, STATUSES, STATUS_LABELS } from '@/lib/types';
 import { makeTaskId } from '@/lib/task-id';
 import { useSpaces } from '@/components/providers/SpacesProvider';
@@ -50,6 +50,20 @@ export default function TaskModal({
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  // Auto-grow the description textarea to fit its content (capped, then
+  // scrolls) so long descriptions are readable without a tiny scroll box.
+  const descRef = useRef<HTMLTextAreaElement>(null);
+  const resizeDescription = useCallback(() => {
+    const el = descRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight + 2, 400)}px`;
+  }, []);
+
+  useEffect(() => {
+    resizeDescription();
+  }, [resizeDescription]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const data = { ...form };
@@ -93,10 +107,14 @@ export default function TaskModal({
           <div>
             <label className="block text-xs text-gray-400 mb-1">Description</label>
             <textarea
+              ref={descRef}
               value={form.description || ''}
-              onChange={(e) => set('description', e.target.value)}
+              onChange={(e) => {
+                set('description', e.target.value);
+                resizeDescription();
+              }}
               rows={3}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 resize-none overflow-y-auto"
             />
           </div>
 
