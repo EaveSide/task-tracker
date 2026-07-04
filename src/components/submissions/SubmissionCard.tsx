@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { AppUser, FeatureSubmission } from '@/lib/types';
-import { SUBMISSION_TYPE_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/types';
+import { AREAS, SUBMISSION_TYPE_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/types';
 import ImageLightbox from '@/components/ui/ImageLightbox';
 
 interface SubmissionCardProps {
@@ -12,7 +12,7 @@ interface SubmissionCardProps {
   actioning: boolean;
   onToggle: () => void;
   onAccept: (sub: FeatureSubmission) => void;
-  onQuickApprove: (sub: FeatureSubmission, assignee: string) => Promise<void>;
+  onQuickApprove: (sub: FeatureSubmission, assignee: string, area: string) => Promise<void>;
   onUpdate: (id: string, updates: Record<string, unknown>) => void;
 }
 
@@ -27,6 +27,7 @@ export default function SubmissionCard({
   onUpdate,
 }: SubmissionCardProps) {
   const [assignee, setAssignee] = useState('');
+  const [area, setArea] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900 transition-colors hover:border-gray-700">
@@ -156,8 +157,22 @@ export default function SubmissionCard({
                   </option>
                 ))}
               </select>
+              <select
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                disabled={actioning}
+                className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-gray-200 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+                aria-label="Area"
+              >
+                <option value="">Select area...</option>
+                {AREAS.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
               <button
-                onClick={() => onQuickApprove(sub, assignee)}
+                onClick={() => onQuickApprove(sub, assignee, area)}
                 disabled={actioning}
                 className="rounded-lg bg-green-600 hover:bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors disabled:opacity-50"
               >

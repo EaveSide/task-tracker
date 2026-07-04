@@ -19,7 +19,7 @@ interface TaskModalContextValue {
   openEdit: (task: DevTask) => void;
   acceptSubmission: (sub: FeatureSubmission) => void;
   /** One-click approve: create a task from the submission and move it to the board. */
-  quickApprove: (sub: FeatureSubmission, assignee: string) => Promise<void>;
+  quickApprove: (sub: FeatureSubmission, assignee: string, area: string) => Promise<void>;
 }
 
 const TaskModalContext = createContext<TaskModalContextValue | null>(null);
@@ -74,7 +74,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const quickApprove = useCallback(
-    async (sub: FeatureSubmission, assignee: string) => {
+    async (sub: FeatureSubmission, assignee: string, area: string) => {
       const saved = await tasksCtx.persistTask(
         makeEmptyTask({
           title: sub.title,
@@ -84,6 +84,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
             (sub.submitted_by_email ? ` (${sub.submitted_by_email})` : ''),
           type: SUBMISSION_TYPE_TO_TASK_TYPE[sub.type] || 'Enhancement',
           assignee,
+          area,
           status: 'todo',
           image_urls: sub.image_urls,
           notify_email: sub.notify_on_complete ? sub.submitted_by_email : null,
