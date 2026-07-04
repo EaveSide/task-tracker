@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent } from 'react';
 import { uploadTaskImages } from '@/lib/api/tasks';
+import ImageLightbox from '@/components/ui/ImageLightbox';
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -23,6 +24,7 @@ export default function TaskImagesField({ value, taskId, onChange }: TaskImagesF
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   async function handleFiles(e: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files || []);
@@ -71,14 +73,14 @@ export default function TaskImagesField({ value, taskId, onChange }: TaskImagesF
         <div className="mb-2 flex flex-wrap gap-2">
           {urls.map((url, i) => (
             <div key={url} className="relative group">
-              <a href={url} target="_blank" rel="noopener noreferrer">
+              <button type="button" onClick={() => setLightboxIndex(i)} title="View image">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={url}
                   alt={`Attachment ${i + 1}`}
-                  className="h-20 w-20 rounded-lg border border-gray-700 object-cover transition-colors hover:border-blue-500"
+                  className="h-20 w-20 cursor-pointer rounded-lg border border-gray-700 object-cover transition-colors hover:border-blue-500"
                 />
-              </a>
+              </button>
               <button
                 type="button"
                 onClick={() => removeImage(i)}
@@ -117,6 +119,14 @@ export default function TaskImagesField({ value, taskId, onChange }: TaskImagesF
       )}
 
       {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          images={urls}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   );
 }

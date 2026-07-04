@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { AppUser, FeatureSubmission } from '@/lib/types';
 import { SUBMISSION_TYPE_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/types';
+import ImageLightbox from '@/components/ui/ImageLightbox';
 
 interface SubmissionCardProps {
   sub: FeatureSubmission;
@@ -26,6 +27,7 @@ export default function SubmissionCard({
   onUpdate,
 }: SubmissionCardProps) {
   const [assignee, setAssignee] = useState('');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900 transition-colors hover:border-gray-700">
       <button
@@ -119,14 +121,14 @@ export default function SubmissionCard({
               </p>
               <div className="flex gap-2">
                 {sub.image_urls.map((url, i) => (
-                  <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  <button key={i} type="button" onClick={() => setLightboxIndex(i)} title="View image">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
                       alt={`Attachment ${i + 1}`}
-                      className="h-24 w-24 rounded-lg border border-gray-700 object-cover hover:border-blue-500 transition-colors"
+                      className="h-24 w-24 cursor-pointer rounded-lg border border-gray-700 object-cover hover:border-blue-500 transition-colors"
                     />
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
@@ -176,6 +178,13 @@ export default function SubmissionCard({
                 Add details…
               </button>
             </div>
+          )}
+          {lightboxIndex !== null && sub.image_urls && (
+            <ImageLightbox
+              images={sub.image_urls}
+              initialIndex={lightboxIndex}
+              onClose={() => setLightboxIndex(null)}
+            />
           )}
           {sub.status === 'declined' && (
             <div className="flex flex-wrap gap-2 pt-1">
