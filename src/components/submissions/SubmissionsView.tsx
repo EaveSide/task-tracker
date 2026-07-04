@@ -21,6 +21,8 @@ export default function SubmissionsView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filter, setFilter] = useState('all');
+  const [submitterFilter, setSubmitterFilter] = useState('all');
+  const [submitterMode, setSubmitterMode] = useState<'is' | 'not'>('is');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
 
@@ -45,19 +47,42 @@ export default function SubmissionsView() {
     [submissions, filter]
   );
 
-  // Per-type counts within the current status selection, so the chip numbers
-  // always match what clicking them shows.
+  // Distinct submitter names across all submissions (stable regardless of the
+  // other filters). Nameless submissions group under "(No name)".
+  const submitters = useMemo(
+    () =>
+      [...new Set(submissions.map((s) => s.submitted_by_name?.trim() || '(No name)'))].sort(
+        (a, b) => a.localeCompare(b)
+      ),
+    [submissions]
+  );
+
+  // Submitter filter supports include ("is") and exclude ("is not") — e.g.
+  // hide everything from a bulk import to focus on organic submissions.
+  const submitterFiltered = useMemo(() => {
+    if (submitterFilter === 'all') return statusFiltered;
+    return statusFiltered.filter((s) => {
+      const name = s.submitted_by_name?.trim() || '(No name)';
+      return submitterMode === 'is' ? name === submitterFilter : name !== submitterFilter;
+    });
+  }, [statusFiltered, submitterFilter, submitterMode]);
+
+  // Per-type counts within the current status + submitter selection, so the
+  // chip numbers always match what clicking them shows.
   const typeCounts = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const s of statusFiltered) {
+    for (const s of submitterFiltered) {
       map[s.type] = (map[s.type] || 0) + 1;
     }
     return map;
-  }, [statusFiltered]);
+  }, [submitterFiltered]);
 
   const filtered = useMemo(
-    () => (typeFilter === 'all' ? statusFiltered : statusFiltered.filter((s) => s.type === typeFilter)),
-    [statusFiltered, typeFilter]
+    () =>
+      typeFilter === 'all'
+        ? submitterFiltered
+        : submitterFiltered.filter((s) => s.type === typeFilter),
+    [submitterFiltered, typeFilter]
   );
 
   return (
@@ -94,7 +119,7 @@ export default function SubmissionsView() {
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         {['all', ...SUBMISSION_TYPES].map((t) => (
           <button
             key={t}
@@ -109,6 +134,40 @@ export default function SubmissionsView() {
             )}
           </button>
         ))}
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <span className="text-xs text-gray-500">Submitter</span>
+          {submitterFilter !== 'all' && (
+            <button
+              onClick={() => setSubmitterMode((m) => (m === 'is' ? 'not' : 'is'))}
+              title={
+                submitterMode === 'is'
+                  ? 'Showing only this submitter — click to exclude them instead'
+                  : 'Excluding this submitter — click to show only them instead'
+              }
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                submitterMode === 'not'
+                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {submitterMode === 'is' ? 'is' : 'is not'}
+            </button>
+          )}
+          <select
+            value={submitterFilter}
+            onChange={(e) => setSubmitterFilter(e.target.value)}
+            className="rounded-lg border border-gray-700 bg-gray-800 px-2.5 py-1.5 text-xs text-gray-200 focus:border-blue-500 focus:outline-none"
+            aria-label="Filter by submitter"
+          >
+            <option value="all">All submitters</option>
+            {submitters.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
