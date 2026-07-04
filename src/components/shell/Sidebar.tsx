@@ -9,6 +9,7 @@ import { useSubmissions } from '@/components/providers/SubmissionsProvider';
 import { useSpaces } from '@/components/providers/SpacesProvider';
 import SpaceNavItem from './SpaceNavItem';
 import GlobalNavItem from './GlobalNavItem';
+import SubmissionsNavItem from './SubmissionsNavItem';
 import SidebarFooter from './SidebarFooter';
 import AddSpaceModal from './AddSpaceModal';
 import ManageUsersModal from './ManageUsersModal';
@@ -49,7 +50,7 @@ function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
 export default function Sidebar() {
   const pathname = usePathname();
   const { tasks } = useTasks();
-  const { newSubmissionCount } = useSubmissions();
+  const { newSubmissionCount, typeCounts } = useSubmissions();
   const { spaces } = useSpaces();
   const [addSpaceOpen, setAddSpaceOpen] = useState(false);
   const [manageUsersOpen, setManageUsersOpen] = useState(false);
@@ -159,13 +160,12 @@ export default function Sidebar() {
             Workspace
           </p>
         )}
-        <GlobalNavItem
-          href="/submissions"
-          label="Submissions"
+        <SubmissionsNavItem
           icon={<InboxIcon />}
           active={pathname === '/submissions'}
           collapsed={collapsed}
           badge={newSubmissionCount}
+          typeCounts={typeCounts}
         />
         <GlobalNavItem
           href="/queue"

@@ -1,7 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { SUBMISSION_STATUSES, SUBMISSION_STATUS_LABELS } from '@/lib/types';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  SUBMISSION_STATUSES,
+  SUBMISSION_STATUS_LABELS,
+  SUBMISSION_TYPES,
+  SUBMISSION_TYPE_LABELS,
+} from '@/lib/types';
 import { useSubmissions } from '@/components/providers/SubmissionsProvider';
 import { useTaskModal } from '@/components/providers/TaskModalProvider';
 import { useUsers } from '@/components/providers/UsersProvider';
@@ -12,18 +18,46 @@ export default function SubmissionsView() {
   const { submissions, newSubmissionCount, actioningId, updateSubmission, reload } = useSubmissions();
   const { acceptSubmission, quickApprove } = useTaskModal();
   const { users } = useUsers();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
 
+  // Type filter lives in the URL (?type=bug) so the sidebar can link straight
+  // to a filtered view.
+  const typeParam = searchParams.get('type');
+  const typeFilter = (SUBMISSION_TYPES as readonly string[]).includes(typeParam || '')
+    ? (typeParam as string)
+    : 'all';
+
+  function setTypeFilter(type: string) {
+    router.replace(type === 'all' ? '/submissions' : `/submissions?type=${type}`);
+  }
+
   // "All" hides resolved submissions (accepted + declined) — those are only
   // shown via their own filter chip.
-  const filtered = useMemo(
+  const statusFiltered = useMemo(
     () =>
       filter === 'all'
         ? submissions.filter((s) => s.status !== 'declined' && s.status !== 'accepted')
         : submissions.filter((s) => s.status === filter),
     [submissions, filter]
+  );
+
+  // Per-type counts within the current status selection, so the chip numbers
+  // always match what clicking them shows.
+  const typeCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const s of statusFiltered) {
+      map[s.type] = (map[s.type] || 0) + 1;
+    }
+    return map;
+  }, [statusFiltered]);
+
+  const filtered = useMemo(
+    () => (typeFilter === 'all' ? statusFiltered : statusFiltered.filter((s) => s.type === typeFilter)),
+    [statusFiltered, typeFilter]
   );
 
   return (
@@ -41,7 +75,7 @@ export default function SubmissionsView() {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-2">
         {['all', ...SUBMISSION_STATUSES].map((s) => (
           <button
             key={s}
@@ -55,6 +89,23 @@ export default function SubmissionsView() {
               <span className="ml-1 bg-blue-600 text-white px-1.5 py-0.5 rounded-full text-xs">
                 {newSubmissionCount}
               </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {['all', ...SUBMISSION_TYPES].map((t) => (
+          <button
+            key={t}
+            onClick={() => setTypeFilter(t)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              typeFilter === t ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
+            }`}
+          >
+            {t === 'all' ? 'All Types' : SUBMISSION_TYPE_LABELS[t]}
+            {t !== 'all' && (
+              <span className="ml-1.5 text-gray-500">{typeCounts[t] || 0}</span>
             )}
           </button>
         ))}

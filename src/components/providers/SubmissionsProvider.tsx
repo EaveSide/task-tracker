@@ -15,6 +15,8 @@ import * as subsApi from '@/lib/api/submissions';
 interface SubmissionsContextValue {
   submissions: FeatureSubmission[];
   newSubmissionCount: number;
+  /** Unresolved (new + reviewed) submission count per type. */
+  typeCounts: Record<string, number>;
   actioningId: string | null;
   updateSubmission: (id: string, updates: Record<string, unknown>) => Promise<void>;
   reload: () => Promise<void>;
@@ -55,6 +57,15 @@ export function SubmissionsProvider({ children }: { children: ReactNode }) {
     [submissions]
   );
 
+  const typeCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const s of submissions) {
+      if (s.status !== 'new' && s.status !== 'reviewed') continue;
+      map[s.type] = (map[s.type] || 0) + 1;
+    }
+    return map;
+  }, [submissions]);
+
   const updateSubmission = useCallback(
     async (id: string, updates: Record<string, unknown>) => {
       setActioningId(id);
@@ -72,6 +83,7 @@ export function SubmissionsProvider({ children }: { children: ReactNode }) {
   const value: SubmissionsContextValue = {
     submissions,
     newSubmissionCount,
+    typeCounts,
     actioningId,
     updateSubmission,
     reload,
