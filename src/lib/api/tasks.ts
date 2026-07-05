@@ -32,6 +32,24 @@ export async function saveTask(task: DevTask): Promise<DevTask> {
   return res.json();
 }
 
+export type BulkTaskUpdates = Partial<
+  Pick<DevTask, 'assignee' | 'sprint' | 'status' | 'priority' | 'area' | 'project' | 'type'>
+>;
+
+export async function bulkUpdateTasks(ids: string[], updates: BulkTaskUpdates): Promise<DevTask[]> {
+  const res = await fetch('/api/tasks/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, updates }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Bulk update failed');
+  }
+  const result = await res.json();
+  return result.updated ?? [];
+}
+
 export async function uploadTaskImages(files: File[], taskId?: string): Promise<string[]> {
   const fd = new FormData();
   files.forEach((f) => fd.append('images', f));

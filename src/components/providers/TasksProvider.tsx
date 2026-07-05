@@ -30,6 +30,8 @@ interface TasksContextValue {
   persistTask: (task: DevTask) => Promise<DevTask | null>;
   /** Like persistTask but toggles `saving` and alerts on failure (used by the modal). */
   saveTask: (task: DevTask) => Promise<DevTask | null>;
+  /** Apply one set of field updates to many tasks. Returns true on success. */
+  bulkUpdate: (ids: string[], updates: tasksApi.BulkTaskUpdates) => Promise<boolean>;
   archiveTasks: (ids: string[]) => Promise<void>;
   unarchiveTasks: (ids: string[]) => Promise<void>;
 }
@@ -139,6 +141,25 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     [mergeTask, flash]
   );
 
+  const bulkUpdate = useCallback(
+    async (ids: string[], updates: tasksApi.BulkTaskUpdates): Promise<boolean> => {
+      if (ids.length === 0) return false;
+      setSaving(true);
+      try {
+        const updated = await tasksApi.bulkUpdateTasks(ids, updates);
+        updated.forEach(mergeTask);
+        flash(`Updated ${updated.length}`);
+        return true;
+      } catch (err) {
+        alert('Bulk update failed: ' + (err instanceof Error ? err.message : 'unknown error'));
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [mergeTask, flash]
+  );
+
   const archiveTasks = useCallback(
     async (ids: string[]) => {
       if (ids.length === 0) return;
@@ -190,6 +211,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     archiving,
     persistTask,
     saveTask,
+    bulkUpdate,
     archiveTasks,
     unarchiveTasks,
   };
