@@ -45,6 +45,20 @@ export default function TaskModal({
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  // Cmd+E (Ctrl+E on Windows) saves the open task, same as clicking
+  // Update/Create — including native form validation.
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        if (!saving) formRef.current?.requestSubmit();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [saving]);
+
   // Auto-grow the description textarea to fit its content (capped, then
   // scrolls) so long descriptions are readable without a tiny scroll box.
   const descRef = useRef<HTMLTextAreaElement>(null);
@@ -79,6 +93,7 @@ export default function TaskModal({
       }}
     >
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
         className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6"
       >
@@ -371,9 +386,11 @@ export default function TaskModal({
             <button
               type="submit"
               disabled={saving}
+              title="⌘E / Ctrl+E"
               className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium"
             >
               {saving ? 'Saving...' : isAccepting ? 'Accept & Create' : isExisting ? 'Update' : 'Create'}
+              <span className="ml-1.5 text-xs text-blue-200/70">⌘E</span>
             </button>
           </div>
         </div>
