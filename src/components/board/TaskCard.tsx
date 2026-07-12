@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { DevTask } from '@/lib/types';
 import { getProjectById, getTypeClass } from '@/lib/task-format';
 import { useSpaces } from '@/components/providers/SpacesProvider';
@@ -13,6 +14,18 @@ interface TaskCardProps {
 export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardProps) {
   const { getSpace } = useSpaces();
   const proj = getSpace(task.project) ?? getProjectById(task.project);
+  const [copied, setCopied] = useState(false);
+
+  async function copyId(e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(task.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard unavailable — the id is visible to copy manually */
+    }
+  }
   return (
     <div
       className={`bg-gray-900 border border-gray-800 rounded-lg p-3 transition-colors priority-${task.priority} ${
@@ -91,7 +104,14 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
             </div>
           )}
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>#{task.id}</span>
+            <button
+              type="button"
+              onClick={copyId}
+              title="Copy ticket #"
+              className={`transition-colors ${copied ? 'text-green-400' : 'hover:text-white'}`}
+            >
+              {copied ? 'Copied!' : `#${task.id}`}
+            </button>
             <div className="flex items-center gap-2">
               {task.type && (
                 <span className={`px-1.5 py-0.5 rounded ${getTypeClass(task.type)}`}>{task.type}</span>

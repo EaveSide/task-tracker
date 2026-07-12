@@ -7,6 +7,7 @@ import { useSpaces } from '@/components/providers/SpacesProvider';
 import { useUsers } from '@/components/providers/UsersProvider';
 import StatusHistory from './StatusHistory';
 import TaskImagesField from './TaskImagesField';
+import TicketRef from './TicketRef';
 
 const TASK_TYPES = ['Enhancement', 'Bug Fix', 'Bug (Critical)', 'Feature Gap', 'Refactor', 'Documentation'];
 
@@ -97,9 +98,12 @@ export default function TaskModal({
         onSubmit={handleSubmit}
         className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6"
       >
-        <h2 className="text-lg font-semibold mb-4">
-          {isAccepting ? 'Accept Submission → Create Task' : isExisting ? 'Edit Task' : 'New Task'}
-        </h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">
+            {isAccepting ? 'Accept Submission → Create Task' : isExisting ? 'Edit Task' : 'New Task'}
+          </h2>
+          {isExisting && !isAccepting && <TicketRef taskId={task.id} project={task.project} />}
+        </div>
 
         <div className="space-y-3">
           <div>

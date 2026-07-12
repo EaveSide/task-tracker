@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -138,6 +139,20 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
     },
     [tasksCtx, close]
   );
+
+  // Deep link: a ?task=<id> query param opens that ticket once tasks have
+  // loaded (the URL the modal's "Copy link" button produces). Checked once
+  // per page load; read from window.location to stay Suspense-free.
+  const openedFromUrl = useRef(false);
+  useEffect(() => {
+    if (openedFromUrl.current || tasksCtx.loading) return;
+    const id = new URLSearchParams(window.location.search).get('task');
+    if (!id) return;
+    openedFromUrl.current = true;
+    const linked = tasksCtx.tasks.find((t) => t.id === id);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (linked) openEdit(linked);
+  }, [tasksCtx.loading, tasksCtx.tasks, openEdit]);
 
   // Global shortcuts: Esc closes, "n" opens a new task.
   useEffect(() => {
