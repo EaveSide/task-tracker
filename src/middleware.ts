@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AUTH_COOKIE, verifyAuthToken } from '@/lib/auth';
+import { AUTH_COOKIE, verifySessionToken } from '@/lib/auth';
 
-// Routes that stay open without the team password:
-//  - /login + /api/login          → so people can actually log in
+// Routes that stay open without a login:
+//  - /login + /api/login/*        → login and first-time password setup
 //  - /submit (page)               → public request-intake form
 //  - POST /api/submit             → the public form's submit endpoint
 // (GET /api/submit is the internal review listing, so it stays gated.)
 function isPublic(req: NextRequest): boolean {
   const { pathname } = req.nextUrl;
-  if (pathname === '/login' || pathname === '/api/login') return true;
+  if (pathname === '/login' || pathname.startsWith('/api/login')) return true;
   if (pathname === '/submit') return true;
   if (pathname === '/api/submit' && req.method === 'POST') return true;
   return false;
@@ -20,7 +20,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   }
 
   const token = req.cookies.get(AUTH_COOKIE)?.value;
-  if (await verifyAuthToken(token, Date.now())) {
+  if ((await verifySessionToken(token, Date.now())) !== null) {
     return NextResponse.next();
   }
 

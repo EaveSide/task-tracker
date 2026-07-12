@@ -1,10 +1,12 @@
 'use client';
 
 import { useTasks } from '@/components/providers/TasksProvider';
+import { useCurrentUser } from '@/components/providers/CurrentUserProvider';
 import ThemeToggle from './ThemeToggle';
 
 export default function SidebarFooter({ collapsed }: { collapsed?: boolean }) {
   const { syncStatus } = useTasks();
+  const { currentUser } = useCurrentUser();
 
   async function logout() {
     await fetch('/api/login', { method: 'DELETE' });
@@ -13,6 +15,19 @@ export default function SidebarFooter({ collapsed }: { collapsed?: boolean }) {
 
   return (
     <div className="mt-auto space-y-1 border-t border-gray-800 pt-3">
+      {currentUser && (
+        <div
+          className={`flex items-center gap-2 ${collapsed ? 'justify-center' : 'px-2.5'}`}
+          title={`Signed in as ${currentUser.name}${currentUser.email ? ` (${currentUser.email})` : ''}`}
+        >
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600/30 text-[10px] font-semibold text-blue-300">
+            {currentUser.name.charAt(0).toUpperCase()}
+          </span>
+          {!collapsed && (
+            <span className="min-w-0 truncate text-xs text-gray-400">{currentUser.name}</span>
+          )}
+        </div>
+      )}
       <div
         className={`flex items-center gap-2 ${collapsed ? 'justify-center' : 'px-2.5'}`}
         title={syncStatus}
