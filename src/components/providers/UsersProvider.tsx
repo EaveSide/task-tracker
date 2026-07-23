@@ -6,7 +6,8 @@ import * as usersApi from '@/lib/api/users';
 
 interface UsersContextValue {
   users: AppUser[];
-  addUser: (name: string) => Promise<AppUser | null>;
+  addUser: (name: string, email?: string) => Promise<AppUser | null>;
+  updateUser: (id: string, updates: { name?: string; email?: string | null }) => Promise<boolean>;
   removeUser: (id: string) => Promise<boolean>;
 }
 
@@ -28,9 +29,9 @@ export function UsersProvider({
 }) {
   const [users, setUsers] = useState<AppUser[]>(initialUsers);
 
-  const addUser = useCallback(async (name: string): Promise<AppUser | null> => {
+  const addUser = useCallback(async (name: string, email?: string): Promise<AppUser | null> => {
     try {
-      const created = await usersApi.createUser(name);
+      const created = await usersApi.createUser(name, email);
       setUsers((prev) =>
         [...prev, created].sort((a, b) => a.name.localeCompare(b.name))
       );
@@ -40,6 +41,24 @@ export function UsersProvider({
       return null;
     }
   }, []);
+
+  const updateUser = useCallback(
+    async (id: string, updates: { name?: string; email?: string | null }): Promise<boolean> => {
+      try {
+        const saved = await usersApi.updateUser(id, updates);
+        setUsers((prev) =>
+          prev
+            .map((u) => (u.id === id ? saved : u))
+            .sort((a, b) => a.name.localeCompare(b.name))
+        );
+        return true;
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to update user');
+        return false;
+      }
+    },
+    []
+  );
 
   const removeUser = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -53,6 +72,8 @@ export function UsersProvider({
   }, []);
 
   return (
-    <UsersContext.Provider value={{ users, addUser, removeUser }}>{children}</UsersContext.Provider>
+    <UsersContext.Provider value={{ users, addUser, updateUser, removeUser }}>
+      {children}
+    </UsersContext.Provider>
   );
 }

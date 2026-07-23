@@ -10,9 +10,17 @@ const DEFAULT_USERS: AppUser[] = [
 export async function getUsersServer(): Promise<AppUser[]> {
   try {
     const sb = getSupabaseAdmin();
-    const { data, error } = await sb.from('users').select('id,name').order('name', { ascending: true });
+    const { data, error } = await sb
+      .from('users')
+      .select('id, name, email, password_hash')
+      .order('name', { ascending: true });
     if (error) return DEFAULT_USERS;
-    return (data as AppUser[]) ?? [];
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      has_account: Boolean(row.password_hash),
+    }));
   } catch {
     return DEFAULT_USERS;
   }

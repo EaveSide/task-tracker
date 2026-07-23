@@ -3,6 +3,7 @@ import { TasksProvider } from '@/components/providers/TasksProvider';
 import { SubmissionsProvider } from '@/components/providers/SubmissionsProvider';
 import { SpacesProvider } from '@/components/providers/SpacesProvider';
 import { UsersProvider } from '@/components/providers/UsersProvider';
+import { CurrentUserProvider } from '@/components/providers/CurrentUserProvider';
 import { TaskModalProvider } from '@/components/providers/TaskModalProvider';
 import Sidebar from '@/components/shell/Sidebar';
 import { getSpacesServer } from '@/lib/spaces-server';
@@ -19,12 +20,14 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <SubmissionsProvider>
         <SpacesProvider initialSpaces={spaces}>
           <UsersProvider initialUsers={users}>
-            <TaskModalProvider>
-              <div className="flex min-h-screen">
-                <Sidebar />
-                <main className="min-w-0 flex-1">{children}</main>
-              </div>
-            </TaskModalProvider>
+            <CurrentUserProvider>
+              <TaskModalProvider>
+                <div className="flex min-h-screen">
+                  <Sidebar />
+                  <main className="min-w-0 flex-1">{children}</main>
+                </div>
+              </TaskModalProvider>
+            </CurrentUserProvider>
           </UsersProvider>
         </SpacesProvider>
       </SubmissionsProvider>
