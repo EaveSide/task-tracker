@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-server';
 import { makeTaskId } from '@/lib/task-id';
 import { isValidEmail, sendTaskCompletedEmail } from '@/lib/email';
+import { AUTH_COOKIE, verifySessionToken } from '@/lib/auth';
 
 const DONE_STATUS = 'done';
 
@@ -58,6 +59,28 @@ export async function POST(req: NextRequest) {
     delete task.notified_at;
 
     const sb = getSupabaseAdmin();
+
+    // Stamp created_by from the session on first save so the task agent
+    // knows whom to ask questions. Server-managed: client value is ignored,
+    // and existing attribution is never overwritten.
+    delete task.created_by;
+    const { data: existing } = await sb
+      .from('sprint_tasks')
+      .select('id, created_by')
+      .eq('id', task.id)
+      .maybeSingle();
+    if (!existing || !existing.created_by) {
+      const token = req.cookies.get(AUTH_COOKIE)?.value;
+      const userId = token ? await verifySessionToken(token) : null;
+      if (userId) {
+        const { data: creator } = await sb
+          .from('users')
+          .select('name')
+          .eq('id', userId)
+          .maybeSingle();
+        if (creator?.name) task.created_by = creator.name;
+      }
+    }
 
     // Look up the prior state so we can detect a transition *into* Done and
     // avoid re-sending a completion email that already went out.
