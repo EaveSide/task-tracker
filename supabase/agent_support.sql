@@ -29,3 +29,8 @@ insert into users (name, discord_id) values
   ('Joey',    '1519506565479141446'),
   ('Colton',  '1526364803025731746')
 on conflict (name) do update set discord_id = excluded.discord_id;
+
+-- Symlink (dev agency): tracker user for assignment/attribution; no discord
+-- id yet, so agent questions on their tasks route to the fallback contact.
+insert into users (name) values ('Symlink')
+on conflict (name) do nothing;
