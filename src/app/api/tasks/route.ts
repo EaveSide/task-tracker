@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     if (!existing || !existing.created_by) {
       const token = req.cookies.get(AUTH_COOKIE)?.value;
-      const userId = token ? await verifySessionToken(token) : null;
+      const userId = token ? await verifySessionToken(token, Date.now()) : null;
       if (userId) {
         const { data: creator } = await sb
           .from('users')
