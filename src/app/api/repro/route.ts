@@ -104,6 +104,12 @@ export async function POST(req: NextRequest) {
     const sb = getSupabaseAdmin();
     const taskId = makeTaskId(optionalString(body.sprint));
 
+    // Stamp created_by the same way POST /api/tasks does, so the task agent
+    // knows whom to ask about a repro ticket. Resolved from the session rather
+    // than taken from the payload: the client is a locally-run tool and must
+    // not get to choose who a ticket is attributed to.
+    const { data: creator } = await sb.from('users').select('name').eq('id', userId).maybeSingle();
+
     const { data: task, error: taskError } = await sb
       .from('sprint_tasks')
       .insert({
@@ -118,6 +124,7 @@ export async function POST(req: NextRequest) {
         priority: 'medium',
         sprint: optionalString(body.sprint),
         repro_label: label,
+        ...(creator?.name ? { created_by: creator.name } : {}),
         created: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         archived: false,
