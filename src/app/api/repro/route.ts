@@ -17,6 +17,12 @@ const VALID_LABELS = ['repro:verified', 'repro:unverified', 'repro:broken'] as c
 const MAX_BODY_BYTES = 25 * 1024 * 1024; // Matches the extension's payload cap.
 const MAX_TITLE = 200;
 
+// Must be one of TASK_TYPES in src/components/task-modal/TaskModal.tsx. A value
+// outside that list is not rejected anywhere - the modal's <select> simply has
+// no matching <option> and falls back to showing "Enhancement", so a bug report
+// silently files itself under the wrong type and gets triaged as feature work.
+const REPRO_TASK_TYPE = 'Bug Fix';
+
 type Label = (typeof VALID_LABELS)[number];
 
 interface ReproRequest {
@@ -107,7 +113,7 @@ export async function POST(req: NextRequest) {
         project,
         area: optionalString(body.area),
         assignee: optionalString(body.assignee) ?? '',
-        type: 'bug',
+        type: REPRO_TASK_TYPE,
         status: 'todo',
         priority: 'medium',
         sprint: optionalString(body.sprint),
