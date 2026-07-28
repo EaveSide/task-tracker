@@ -20,7 +20,20 @@ export interface DevTask {
   notify_email: string | null; // If set, email this address when the task is set to Done
   notified_at: string | null; // Server-managed: when the completion email was sent
   pr_url: string | null; // Link to the pull request implementing this task
+  // Set on tickets filed by Repro Capture. Tells an agent whether the attached
+  // Playwright script actually reproduced the bug (see supabase/repro_packages.sql).
+  repro_label?: ReproLabel | null;
 }
+
+// Whether the generated repro script reproduced the failure when it was run.
+// `verified` means an agent can trust the script as its own test loop.
+export type ReproLabel = 'repro:verified' | 'repro:unverified' | 'repro:broken';
+
+export const REPRO_LABEL_TEXT: Record<ReproLabel, string> = {
+  'repro:verified': 'Repro verified',
+  'repro:unverified': 'Repro unverified',
+  'repro:broken': 'Repro broken',
+};
 
 export const PROJECTS = [
   { id: 'crm', name: 'Roof Estimate CRM', color: '#3b82f6' },

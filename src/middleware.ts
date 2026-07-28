@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AUTH_COOKIE, verifySessionToken } from '@/lib/auth';
+import { AUTH_COOKIE, bearerToken, verifySessionToken } from '@/lib/auth';
 
 // Routes that stay open without a login:
 //  - /login + /api/login/*        → login and first-time password setup
@@ -19,7 +19,10 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get(AUTH_COOKIE)?.value;
+  // Either credential is accepted: the cookie for this origin's own pages, a
+  // bearer token for clients that cannot read an httpOnly cookie (the Repro
+  // Capture extension). Both carry the same signed, expiring value.
+  const token = req.cookies.get(AUTH_COOKIE)?.value ?? bearerToken(req.headers.get('authorization'));
   if ((await verifySessionToken(token, Date.now())) !== null) {
     return NextResponse.next();
   }

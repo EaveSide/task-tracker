@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   AUTH_COOKIE,
+  SESSION_TTL_MS,
   createSessionToken,
   sessionCookieOptions,
   verifyPassword,
@@ -49,7 +50,18 @@ export async function POST(req: NextRequest) {
     }
 
     const token = await createSessionToken(user.id, Date.now());
-    const res = NextResponse.json({ success: true, user: { id: user.id, name: user.name } });
+
+    // The token is returned in the body only when a client explicitly asks for
+    // it. Browser pages keep using the httpOnly cookie, which nothing on the
+    // page can read; handing the same value to every caller would give up that
+    // protection for the sake of one client that cannot use cookies.
+    const wantsToken = body?.mode === 'token';
+
+    const res = NextResponse.json({
+      success: true,
+      user: { id: user.id, name: user.name },
+      ...(wantsToken ? { token, expiresIn: SESSION_TTL_MS } : {}),
+    });
     res.cookies.set(AUTH_COOKIE, token, sessionCookieOptions());
     return res;
   } catch (err) {

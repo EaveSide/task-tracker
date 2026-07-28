@@ -89,6 +89,18 @@ export async function createSessionToken(userId: string, now: number): Promise<s
   return `${payload}.${signature}`;
 }
 
+// Pulls the session token out of an `Authorization: Bearer <token>` header.
+//
+// Non-browser clients (the Repro Capture extension) cannot use the session
+// cookie: it is httpOnly, so nothing outside this origin's own pages can read
+// it. The token itself is already self-contained and self-verifying, so the
+// same value works as a bearer credential with no extra server state.
+export function bearerToken(header: string | null | undefined): string | undefined {
+  if (!header) return undefined;
+  const match = /^Bearer\s+(.+)$/i.exec(header.trim());
+  return match?.[1]?.trim() || undefined;
+}
+
 // Returns the user id carried by a valid, unexpired token, or null.
 export async function verifySessionToken(
   token: string | undefined,
