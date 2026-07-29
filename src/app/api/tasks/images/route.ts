@@ -1,26 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-server';
+import {
+  MAX_IMAGE_SIZE,
+  MAX_TASK_IMAGES,
+  SUPPORTED_TYPES_LABEL,
+  isAllowedImageType,
+} from '@/lib/images/constants';
+import { ImageInputError } from '@/lib/images/errors';
+import { assertSupportedImage } from '@/lib/images/sniff';
+import { uploadTaskImage } from '@/lib/images/storage';
 
-const MAX_FILES = 6;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_MB = Math.round(MAX_IMAGE_SIZE / 1024 / 1024);
 
 // POST /api/tasks/images — upload photos for a task, returns their public URLs.
 // Multipart form: `images` (files), optional `task_id` (groups files in storage).
-// Reuses the submission-images bucket under a tasks/ prefix so no extra
-// Supabase setup is required. The caller saves the returned URLs onto the
-// task's image_urls via the normal task save.
+// Used by the file picker, by drag-and-drop of files, and by pasted screenshots.
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const files = formData.getAll('images') as File[];
+    const files = formData.getAll('images').filter((v): v is File => v instanceof File);
     const taskId = (formData.get('task_id') as string) || crypto.randomUUID();
 
     if (files.length === 0) {
       return NextResponse.json({ error: 'No images provided' }, { status: 400 });
     }
-    if (files.length > MAX_FILES) {
-      return NextResponse.json({ error: `Maximum ${MAX_FILES} images allowed` }, { status: 400 });
+    if (files.length > MAX_TASK_IMAGES) {
+      return NextResponse.json(
+        { error: `Maximum ${MAX_TASK_IMAGES} images allowed` },
+        { status: 400 }
+      );
     }
 
     const sb = getSupabaseAdmin();
@@ -29,46 +37,27 @@ export async function POST(req: NextRequest) {
     for (const file of files) {
       if (!file.size) continue; // skip empty file inputs
 
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        return NextResponse.json(
-          { error: `Invalid file type: ${file.type}. Only JPEG, PNG, GIF, and WebP are allowed.` },
-          { status: 400 }
+      // The declared type is a client-supplied hint; the bytes are the
+      // authority, so both are checked.
+      if (!isAllowedImageType(file.type)) {
+        throw new ImageInputError(
+          `"${file.name}" is not a supported image type. Use ${SUPPORTED_TYPES_LABEL}.`
         );
       }
-      if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json(
-          { error: `File "${file.name}" exceeds 5MB limit` },
-          { status: 400 }
-        );
+      if (file.size > MAX_IMAGE_SIZE) {
+        throw new ImageInputError(`"${file.name}" exceeds the ${MAX_MB}MB limit.`);
       }
 
-      const ext = file.name.split('.').pop() || 'jpg';
-      // Sanitize the id so a malicious task_id can't traverse storage paths.
-      const safeId = taskId.replace(/[^a-zA-Z0-9_-]/g, '_');
-      const path = `tasks/${safeId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-      const arrayBuffer = await file.arrayBuffer();
-      const { error: uploadErr } = await sb.storage
-        .from('submission-images')
-        .upload(path, arrayBuffer, {
-          contentType: file.type,
-          upsert: false,
-        });
-
-      if (uploadErr) {
-        console.error('Task image upload error:', uploadErr);
-        return NextResponse.json(
-          { error: 'Failed to upload image. Please try again.' },
-          { status: 500 }
-        );
-      }
-
-      const { data: urlData } = sb.storage.from('submission-images').getPublicUrl(path);
-      imageUrls.push(urlData.publicUrl);
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const type = assertSupportedImage(bytes, file.name);
+      imageUrls.push(await uploadTaskImage(sb, taskId, bytes, type));
     }
 
     return NextResponse.json({ image_urls: imageUrls });
   } catch (err) {
+    if (err instanceof ImageInputError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     console.error('Task image upload error:', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal error' },

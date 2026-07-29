@@ -64,6 +64,22 @@ export async function uploadTaskImages(files: File[], taskId?: string): Promise<
   return result.image_urls ?? [];
 }
 
+// Images dragged out of a web page or Slack arrive as URLs rather than bytes.
+// The server fetches each one and re-hosts it in our own bucket.
+export async function importTaskImagesFromUrls(urls: string[], taskId?: string): Promise<string[]> {
+  const res = await fetch('/api/tasks/images/from-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ urls, task_id: taskId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Could not import that image');
+  }
+  const result = await res.json();
+  return result.image_urls ?? [];
+}
+
 export async function fetchTaskHistory(taskId: string): Promise<TaskStatusEvent[]> {
   const res = await fetch(`/api/tasks/history?task_id=${encodeURIComponent(taskId)}`);
   if (!res.ok) throw new Error('Failed to load status history');
