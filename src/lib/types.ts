@@ -20,6 +20,14 @@ export interface DevTask {
   notify_email: string | null; // If set, email this address when the task is set to Done
   notified_at: string | null; // Server-managed: when the completion email was sent
   pr_url: string | null; // Link to the pull request implementing this task
+  // Agent deferral (see supabase/sprint_tasks_deferral.sql). All independent,
+  // all nullable, and none of them touch priority or status - a deferred
+  // ticket keeps its real triage. NULL everywhere = ordinary queue work.
+  snoozed_until?: string | null; // agent skips it until this passes, then auto-returns
+  deprioritized_at?: string | null; // still worked, but sorts behind everything
+  dismissed_at?: string | null; // agent never picks it up; humans still can
+  deferral_reason?: string | null;
+  deferred_by?: string | null;
   // Set on tickets filed by Repro Capture. Tells an agent whether the attached
   // Playwright script actually reproduced the bug (see supabase/repro_packages.sql).
   repro_label?: ReproLabel | null;

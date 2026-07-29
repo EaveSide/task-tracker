@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { DevTask } from '@/lib/types';
-import { getProjectById, getTypeClass } from '@/lib/task-format';
+import { getDeferralBadge, getProjectById, getTypeClass } from '@/lib/task-format';
 import { useSpaces } from '@/components/providers/SpacesProvider';
 
 interface TaskCardProps {
@@ -15,6 +15,7 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
   const { getSpace } = useSpaces();
   const proj = getSpace(task.project) ?? getProjectById(task.project);
   const [copied, setCopied] = useState(false);
+  const deferral = getDeferralBadge(task);
 
   async function copyId(e: React.MouseEvent) {
     e.stopPropagation();
@@ -57,7 +58,17 @@ export default function TaskCard({ task, dragHandleProps, isOverlay }: TaskCardP
             <span className="text-xs text-gray-500">{task.sprint || ''}</span>
           </div>
           {task.area && <div className="text-xs text-gray-500 mb-1">{task.area}</div>}
-          <div className="text-sm font-medium mb-2">{task.title}</div>
+          <div className={`text-sm font-medium mb-2 ${deferral ? 'text-gray-400' : ''}`}>
+            {task.title}
+          </div>
+          {deferral && (
+            <div
+              className={`mb-2 inline-block text-xs px-1.5 py-0.5 rounded ${deferral.className}`}
+              title={deferral.title}
+            >
+              {deferral.label}
+            </div>
+          )}
           {((task.image_urls && task.image_urls.length > 0) || task.notify_email || task.pr_url) && (
             <div className="mb-2 flex items-center gap-2.5 text-xs text-gray-500">
               {task.image_urls && task.image_urls.length > 0 && (
