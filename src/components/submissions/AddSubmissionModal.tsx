@@ -25,8 +25,13 @@ export default function AddSubmissionModal({ onClose, onSuccess }: AddSubmission
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-lg">
-        <div className="mb-3 flex items-center justify-between">
+      {/* One opaque surface holds both the header and the form. The shared form
+          card is semi-transparent by design on the public /submit page, where it
+          sits on a plain background, and the header text colour flips with the
+          theme — so on the bare overlay the list would show through the form and
+          the title would be dark-on-dark in light mode. */}
+      <div className="w-full max-w-lg rounded-2xl bg-gray-950">
+        <div className="flex items-center justify-between px-6 pt-5">
           <h2 className="text-lg font-semibold">New Submission</h2>
           <button
             onClick={onClose}
