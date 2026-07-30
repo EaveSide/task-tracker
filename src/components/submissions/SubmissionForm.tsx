@@ -7,6 +7,24 @@ type RequestType = 'bug' | 'feature' | 'improvement';
 const MAX_FILES = 3;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// Most submissions that come in are bug reports, so that is what the form
+// opens on.
+const DEFAULT_REQUEST_TYPE: RequestType = 'bug';
+
+// Single source for a pristine form, used both on mount and by "Submit
+// Another" — otherwise the two copies drift apart.
+function emptyForm() {
+  return {
+    type: DEFAULT_REQUEST_TYPE,
+    title: '',
+    description: '',
+    submitted_by_name: '',
+    submitted_by_email: '',
+    submitted_by_phone: '',
+    honeypot: '',
+  };
+}
+
 interface SubmissionFormProps {
   /** Called after a submission is saved — e.g. to reload the submissions list. */
   onSuccess?: () => void;
@@ -18,15 +36,7 @@ interface SubmissionFormProps {
 // the "New submission" modal on the internal Submissions tab. Posts to the same
 // /api/submit endpoint in both cases.
 export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormProps) {
-  const [form, setForm] = useState({
-    type: 'feature' as RequestType,
-    title: '',
-    description: '',
-    submitted_by_name: '',
-    submitted_by_email: '',
-    submitted_by_phone: '',
-    honeypot: '',
-  });
+  const [form, setForm] = useState(emptyForm);
   const [notifyOnComplete, setNotifyOnComplete] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -96,15 +106,7 @@ export default function SubmissionForm({ onSuccess, onClose }: SubmissionFormPro
 
   function resetForm() {
     setStatus('idle');
-    setForm({
-      type: 'feature',
-      title: '',
-      description: '',
-      submitted_by_name: '',
-      submitted_by_email: '',
-      submitted_by_phone: '',
-      honeypot: '',
-    });
+    setForm(emptyForm());
     setNotifyOnComplete(false);
     setFiles([]);
     previews.forEach((url) => URL.revokeObjectURL(url));
