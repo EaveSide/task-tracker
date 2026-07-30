@@ -18,5 +18,8 @@ export async function updateSubmission(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, ...updates }),
   });
-  if (!res.ok) throw new Error('Update failed');
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Update failed');
+  }
 }

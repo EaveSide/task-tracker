@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import type { AppUser, FeatureSubmission } from '@/lib/types';
-import { AREAS, SUBMISSION_TYPE_LABELS, SUBMISSION_STATUS_LABELS } from '@/lib/types';
+import {
+  AREAS,
+  SUBMISSION_TYPES,
+  SUBMISSION_TYPE_LABELS,
+  SUBMISSION_STATUS_LABELS,
+} from '@/lib/types';
 import ImageLightbox from '@/components/ui/ImageLightbox';
 
 interface SubmissionCardProps {
@@ -13,7 +18,8 @@ interface SubmissionCardProps {
   onToggle: () => void;
   onAccept: (sub: FeatureSubmission) => void;
   onQuickApprove: (sub: FeatureSubmission, assignee: string, area: string) => Promise<void>;
-  onUpdate: (id: string, updates: Record<string, unknown>) => void;
+  /** Resolves to null on success, or a user-facing message when it failed. */
+  onUpdate: (id: string, updates: Record<string, unknown>) => Promise<string | null>;
 }
 
 export default function SubmissionCard({
@@ -29,6 +35,16 @@ export default function SubmissionCard({
   const [assignee, setAssignee] = useState('');
   const [area, setArea] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [typeError, setTypeError] = useState('');
+
+  // Submitters routinely pick the wrong request type, so reviewers can correct
+  // it here instead of the submission having to be re-filed.
+  async function changeType(next: string) {
+    if (next === sub.type) return;
+    setTypeError('');
+    setTypeError((await onUpdate(sub.id, { type: next })) ?? '');
+  }
+
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900 transition-colors hover:border-gray-700">
       <button
@@ -80,6 +96,28 @@ export default function SubmissionCard({
 
       {expanded && (
         <div className="border-t border-gray-800 px-4 py-4 space-y-4">
+          <div>
+            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+              Type
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={sub.type}
+                onChange={(e) => changeType(e.target.value)}
+                disabled={actioning}
+                className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-gray-200 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+                aria-label="Change request type"
+              >
+                {SUBMISSION_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {SUBMISSION_TYPE_LABELS[t]}
+                  </option>
+                ))}
+              </select>
+              {typeError && <span className="text-xs text-red-400">{typeError}</span>}
+            </div>
+          </div>
+
           <div>
             <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
               Description

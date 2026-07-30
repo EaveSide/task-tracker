@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-server';
+import { SUBMISSION_STATUSES, SUBMISSION_TYPES } from '@/lib/types';
+
+const TYPE_VALUES: readonly string[] = SUBMISSION_TYPES;
+const STATUS_VALUES: readonly string[] = SUBMISSION_STATUSES;
 
 const MAX_FILES = 3;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -49,8 +53,11 @@ export async function POST(req: NextRequest) {
     const honeypot = formData.get('honeypot') as string;
 
     // Validate required fields
-    if (!type || !['bug', 'feature', 'improvement'].includes(type)) {
-      return NextResponse.json({ error: 'Valid type is required (bug, feature, improvement)' }, { status: 400 });
+    if (!type || !TYPE_VALUES.includes(type)) {
+      return NextResponse.json(
+        { error: `Valid type is required (${TYPE_VALUES.join(', ')})` },
+        { status: 400 }
+      );
     }
     if (!title?.trim() || title.trim().length < 5) {
       return NextResponse.json({ error: 'Title must be at least 5 characters' }, { status: 400 });
@@ -158,7 +165,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT /api/submit — update submission status (for internal review)
+// PUT /api/submit — update a submission during internal review: its status, its
+// request type (submitters routinely pick the wrong one), or its linked task.
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
@@ -171,7 +179,7 @@ export async function PUT(req: NextRequest) {
     const updates: Record<string, unknown> = {};
 
     if (body.status) {
-      if (!['new', 'reviewed', 'accepted', 'declined'].includes(body.status)) {
+      if (!STATUS_VALUES.includes(body.status)) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
       }
       updates.status = body.status;
@@ -180,8 +188,22 @@ export async function PUT(req: NextRequest) {
       }
     }
 
+    if (body.type !== undefined) {
+      if (!TYPE_VALUES.includes(body.type)) {
+        return NextResponse.json(
+          { error: `Invalid type (expected one of: ${TYPE_VALUES.join(', ')})` },
+          { status: 400 }
+        );
+      }
+      updates.type = body.type;
+    }
+
     if (body.linked_task_id !== undefined) {
       updates.linked_task_id = body.linked_task_id || null;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No supported fields to update' }, { status: 400 });
     }
 
     const { data, error } = await sb

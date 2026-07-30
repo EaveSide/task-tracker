@@ -18,7 +18,8 @@ interface SubmissionsContextValue {
   /** Unresolved (new + reviewed) submission count per type. */
   typeCounts: Record<string, number>;
   actioningId: string | null;
-  updateSubmission: (id: string, updates: Record<string, unknown>) => Promise<void>;
+  /** Resolves to null on success, or a user-facing message when it failed. */
+  updateSubmission: (id: string, updates: Record<string, unknown>) => Promise<string | null>;
   reload: () => Promise<void>;
 }
 
@@ -46,7 +47,6 @@ export function SubmissionsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Initial load + 30s polling. reload() sets state only after an awaited
     // fetch resolves, so this is not a synchronous cascading render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     reload();
     const interval = setInterval(reload, 30000);
     return () => clearInterval(interval);
@@ -67,15 +67,20 @@ export function SubmissionsProvider({ children }: { children: ReactNode }) {
   }, [submissions]);
 
   const updateSubmission = useCallback(
-    async (id: string, updates: Record<string, unknown>) => {
+    async (id: string, updates: Record<string, unknown>): Promise<string | null> => {
       setActioningId(id);
       try {
         await subsApi.updateSubmission(id, updates);
         await reload();
-      } catch {
-        /* ignore */
+        return null;
+      } catch (err) {
+        // Returned rather than thrown: several callers are fire-and-forget
+        // click handlers, and an unhandled rejection would be worse than a
+        // message the caller can choose to render.
+        return err instanceof Error ? err.message : 'Update failed';
+      } finally {
+        setActioningId(null);
       }
-      setActioningId(null);
     },
     [reload]
   );
